@@ -411,7 +411,7 @@
       id: "lesson-10",
       title: "第十课",
       date: "本周练习",
-      summary: "16 个听写词语、8 个句子、选择题、词语搭配、短文填空",
+      summary: "学校听写 8 项、补习班听写 16 项、选择题、词语搭配、短文填空",
       words: [
         ["收拾", "shou shi"], ["漂亮", "piao liang"], ["追上", "zhui shang"], ["觉得", "jue de"],
         ["决定", "jue ding"], ["保持", "bao chi"], ["伸出手", "shen chu shou"], ["浪费", "lang fei"],
@@ -678,12 +678,12 @@
       list.innerHTML = "";
       const groups = [
         {
-          title: "第一份：词语听写",
-          items: currentCourse.words.map(([text, pinyin]) => ({ text, pinyin }))
+          title: "学校听写：第十课",
+          items: currentCourse.sentences.map(text => ({ text, pinyin: "" }))
         },
         {
-          title: "第二份：句子听写",
-          items: currentCourse.sentences.map(text => ({ text, pinyin: "" }))
+          title: "补习班听写：本周作业",
+          items: currentCourse.words.map(([text, pinyin]) => ({ text, pinyin }))
         }
       ];
       groups.forEach(group => {
