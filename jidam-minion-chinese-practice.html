@@ -185,6 +185,29 @@
     .note { color: var(--muted); font-weight: 700; }
     .practice-list { display: grid; gap: 14px; }
     .practice-card { padding: 14px; }
+    .dictation-group { margin-bottom: 18px; }
+    .dictation-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .dictation-head h3 { margin: 0; color: var(--blue-dark); font-size: 22px; }
+    .dictation-list { display: grid; gap: 8px; }
+    .dictation-item {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) 52px;
+      gap: 10px;
+      align-items: center;
+      min-height: 66px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .dictation-number { color: var(--blue); font-size: 20px; font-weight: 900; }
+    .dictation-text { font-size: 22px; font-weight: 800; line-height: 1.45; }
     .card-head {
       display: grid;
       grid-template-columns: auto 1fr auto auto;
@@ -325,7 +348,7 @@
     <section class="view" id="courseView">
       <div class="back-row">
         <button class="ghost" id="backHome">← 返回课程主页</button>
-        <span class="note">建议顺序：先听、再描、隐藏后默写，最后做题。</span>
+        <span class="note">先朗读听写清单，再完成课堂练习。</span>
       </div>
       <nav class="tabs">
         <button class="tab active" data-panel="writingPanel">听写默写</button>
@@ -334,12 +357,7 @@
         <button class="tab" data-panel="clozePanel">短文填空</button>
       </nav>
       <section class="panel active" id="writingPanel">
-        <h2>听写默写</h2>
-        <div class="bar">
-          <button class="primary" id="hideAll">全部隐藏</button>
-          <button id="showAll">全部显示</button>
-          <span class="note">田字格已放大，词语和句子都在这里写。</span>
-        </div>
+        <h2>本周听写</h2>
         <div class="practice-list" id="writingList"></div>
       </section>
       <section class="panel" id="mcqPanel">
@@ -642,7 +660,7 @@
       right = 0;
       answered = 0;
       showCopies = true;
-      total = currentCourse.words.length + currentCourse.sentences.length + currentCourse.mcq.length + currentCourse.match.length + currentCourse.clozeAnswers.length;
+      total = currentCourse.mcq.length + currentCourse.match.length + currentCourse.clozeAnswers.length;
       document.getElementById("totalCount").textContent = total;
       document.getElementById("pageSub").textContent = currentCourse.title;
       document.getElementById("resultBox").style.display = "none";
@@ -658,42 +676,30 @@
     function renderWriting() {
       const list = document.getElementById("writingList");
       list.innerHTML = "";
-      const items = [
-        ...currentCourse.words.map(([text, pinyin], i) => ({ text, pinyin, id: "w" + i, kind: "词语" })),
-        ...currentCourse.sentences.map((text, i) => ({ text, pinyin: "", id: "s" + i, kind: "句子" }))
+      const groups = [
+        {
+          title: "第一份：词语听写",
+          items: currentCourse.words.map(([text, pinyin]) => ({ text, pinyin }))
+        },
+        {
+          title: "第二份：句子听写",
+          items: currentCourse.sentences.map(text => ({ text, pinyin: "" }))
+        }
       ];
-      items.forEach(item => {
-        const card = document.createElement("article");
-        card.className = "practice-card";
-        card.innerHTML = `
-          <div class="card-head">
-            <button class="speak" title="朗读">🔊</button>
-            <div><div class="item-title">${item.kind}</div><div class="pinyin">${item.pinyin}</div></div>
-            <button class="toggle-copy">${showCopies ? "隐藏" : "显示"}</button>
-            <button class="clear">擦掉</button>
-          </div>
-          <div class="copy-text ${showCopies ? "" : "hidden"}">${showCopies ? item.text : "听后默写"}</div>
-        `;
-        card.appendChild(makeTianziRow(item.text));
-        const bar = document.createElement("div");
-        bar.className = "bar";
-        const finish = document.createElement("button");
-        finish.className = "primary";
-        finish.textContent = "完成这一题";
-        bar.appendChild(finish);
-        card.appendChild(bar);
-        card.querySelector(".speak").onclick = () => speak(item.text);
-        card.querySelector(".clear").onclick = () => card.querySelectorAll("canvas").forEach(c => c.clearBox && c.clearBox());
-        card.querySelector(".toggle-copy").onclick = () => {
-          const text = card.querySelector(".copy-text");
-          const hidden = text.textContent !== "听后默写";
-          text.textContent = hidden ? "听后默写" : item.text;
-          text.classList.toggle("hidden", hidden);
-          card.querySelectorAll(".trace-char").forEach((x, idx) => x.textContent = hidden ? "" : visibleChars(item.text)[idx]);
-          card.querySelector(".toggle-copy").textContent = hidden ? "显示" : "隐藏";
-        };
-        finish.onclick = () => markWriting(item.id, finish);
-        list.appendChild(card);
+      groups.forEach(group => {
+        const section = document.createElement("section");
+        section.className = "dictation-group";
+        section.innerHTML = `<div class="dictation-head"><h3>${group.title}</h3><button class="primary read-all">🔊 朗读全部</button></div><div class="dictation-list"></div>`;
+        section.querySelector(".read-all").onclick = () => speak(group.items.map(x => x.text).join("。"));
+        const itemList = section.querySelector(".dictation-list");
+        group.items.forEach((item, i) => {
+          const row = document.createElement("div");
+          row.className = "dictation-item";
+          row.innerHTML = `<span class="dictation-number">${i + 1}</span><div><div class="dictation-text">${item.text}</div><div class="pinyin">${item.pinyin}</div></div><button class="speak" title="朗读">🔊</button>`;
+          row.querySelector(".speak").onclick = () => speak(item.text);
+          itemList.appendChild(row);
+        });
+        list.appendChild(section);
       });
     }
     function renderQuestions(target, data, prefix, speechPrefix) {
@@ -792,8 +798,6 @@
         setActivePanel(tab.dataset.panel);
       };
     });
-    document.getElementById("hideAll").onclick = () => { showCopies = false; renderWriting(); };
-    document.getElementById("showAll").onclick = () => { showCopies = true; renderWriting(); };
     document.getElementById("voiceSelect").onchange = e => {
       selectedVoiceName = e.target.value;
       speak("这是智澹的中文朗读声音。");
