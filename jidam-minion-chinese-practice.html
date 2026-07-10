@@ -263,8 +263,11 @@
       display: grid;
       grid-template-columns: auto 1fr;
       gap: 8px 12px;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--line);
+      padding: 14px;
+      margin: 12px 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
     }
     .qtext { font-size: 20px; line-height: 1.55; }
     .options {
@@ -274,7 +277,40 @@
       gap: 8px;
     }
     .option { text-align: left; min-height: 46px; }
-    .answer-line { grid-column: 1 / -1; min-height: 24px; font-weight: 800; color: var(--blue-dark); }
+    .answer-line {
+      grid-column: 1 / -1;
+      min-height: 24px;
+      font-weight: 800;
+      color: var(--blue-dark);
+      background: #eef7ff;
+      border-left: 4px solid var(--blue);
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .answer-line:empty { display: none; }
+    .sequence-card {
+      grid-column: 1 / -1;
+      display: grid;
+      gap: 10px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .sequence-row {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 8px;
+      border-radius: 8px;
+      background: #f7fbff;
+    }
+    .sequence-row.fixed { background: #eef7ff; font-weight: 800; }
+    .sequence-row.good { background: #eaf8ef; }
+    .sequence-row.bad { background: #fff0ef; }
+    .number-bank { display: flex; flex-wrap: wrap; gap: 6px; }
+    .number-bank button { min-width: 42px; padding: 8px 10px; }
     .cloze-box {
       background: #fff;
       border: 1px solid var(--line);
@@ -378,7 +414,7 @@
         <div id="clozeList"></div>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-07-10-1</div>
+      <div class="version">v2026-07-10-4</div>
     </section>
   </main>
 
@@ -489,20 +525,20 @@
       }, {
         title: "补习班听写：本周作业",
         items: [
-          ["亮晶晶", "liang jing jing"], ["世界", "shi jie"], ["文件夹", "wen jian jia"], ["国庆", "guo qing"],
-          ["指着", "zhi zhe"], ["唱国歌", "chang guo ge"], ["兴奋", "xing fen"], ["新加坡", "xin jia po"],
-          ["礼物", "li wu"], ["设计", "she ji"], ["国旗", "guo qi"], ["竖起大拇指", "shu qi da mu zhi"]
+          ["亮晶晶", "liàng jīng jīng"], ["世界", "shì jiè"], ["文件夹", "wén jiàn jiā"], ["国庆", "guó qìng"],
+          ["指着", "zhǐ zhe"], ["唱国歌", "chàng guó gē"], ["兴奋", "xīng fèn"], ["新加坡", "xīn jiā pō"],
+          ["礼物", "lǐ wù"], ["设计", "shè jì"], ["国旗", "guó qí"], ["竖起大拇指", "shù qǐ dà mǔ zhǐ"]
         ]
       }],
       words: [
-        ["亮晶晶", "liang jing jing"], ["世界", "shi jie"], ["文件夹", "wen jian jia"], ["国庆", "guo qing"],
-        ["指着", "zhi zhe"], ["唱国歌", "chang guo ge"], ["兴奋", "xing fen"], ["新加坡", "xin jia po"],
-        ["礼物", "li wu"], ["设计", "she ji"], ["国旗", "guo qi"], ["竖起大拇指", "shu qi da mu zhi"]
+        ["亮晶晶", "liàng jīng jīng"], ["世界", "shì jiè"], ["文件夹", "wén jiàn jiā"], ["国庆", "guó qìng"],
+        ["指着", "zhǐ zhe"], ["唱国歌", "chàng guó gē"], ["兴奋", "xīng fèn"], ["新加坡", "xīn jiā pō"],
+        ["礼物", "lǐ wù"], ["设计", "shè jì"], ["国旗", "guó qí"], ["竖起大拇指", "shù qǐ dà mǔ zhǐ"]
       ],
       sentences: [],
       mcq: [
-        ["升旗手把国旗慢慢地升到空中。请选择“国旗”的正确读音。", ["gou qi", "kuo qi", "guo qi", "kou qi"], 2],
-        ["明天小明要上台领奖，他兴奋得睡不着觉。请选择“兴奋”的正确读音。", ["xing fen", "xing feng", "xin fen", "xin feng"], 0],
+        ["升旗手把国旗慢慢地升到空中。请选择“国旗”的正确读音。", ["góu qí", "kuò qí", "guó qí", "kóu qí"], 2],
+        ["明天小明要上台领奖，他兴奋得睡不着觉。请选择“兴奋”的正确读音。", ["xīng fèn", "xīng fèng", "xīn fèn", "xīn fèng"], 0],
         ["爷爷小时候的生____很贫苦，常常饿肚子。", ["活", "话", "适", "舌"], 0],
         ["妹妹的一____门牙掉了，她吓得哭了起来。", ["棵", "颗", "课", "果"], 1],
         ["姐姐____计了一张新年贺卡送给她的老师。", ["设", "没", "疲", "投"], 0],
@@ -513,60 +549,62 @@
         ["爸爸把画____墙上。", ["贴在", "放在", "摆在", "留在"], 0]
       ],
       match: [
-        ["各样", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 9],
-        ["升起", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 7],
-        ["设计", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 6],
-        ["月儿", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 2],
-        ["感到", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 4],
-        ["练习", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 5],
-        ["猜猜", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 3],
-        ["幸福", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 8],
-        ["国歌", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 1]
+        ["____各样", ["各种", "每种", "几种", "多种"], 0],
+        ["升起____", ["卡片", "国旗", "礼物", "谜语"], 1],
+        ["设计____", ["生活", "野餐", "卡片", "国歌"], 2],
+        ["月儿____", ["兴奋", "唱歌", "野餐", "弯弯"], 3],
+        ["感到____", ["兴奋", "各种", "播放", "谜语"], 0],
+        ["练习____", ["国旗", "唱歌", "生活", "卡片"], 1],
+        ["猜猜____", ["野餐", "国歌", "谜语", "兴奋"], 2],
+        ["____幸福", ["弯弯", "各种", "播放", "生活"], 3],
+        ["____国歌", ["播放", "设计", "升起", "猜猜"], 0]
       ],
       order: [
         {
-          prompt: "把游泳池故事排成一段。",
-          type: "sentences",
-          parts: [
-            "星期天下午，爸爸带我和弟弟去游泳池游泳。",
-            "到了游泳池，弟弟换上游泳裤，就想立刻跳进水里。",
-            "爸爸急忙阻止他说：“小安，你要先做热身运动才行！”",
-            "弟弟听了，只好乖乖地和我们一起做热身运动。",
-            "当我们做完热身运动，就跳进水里，快乐地游了起来。",
-            "傍晚，我们依依不舍地回家了。"
+          prompt: "排序成段：按试卷格式给每句选序号。",
+          type: "sequence",
+          fixed: "星期天下午，爸爸带我和弟弟去游泳池游泳。",
+          choices: [2, 3, 4, 5, 6],
+          lines: [
+            { text: "弟弟听了，只好乖乖地和我们一起做热身运动。", answer: 4 },
+            { text: "爸爸急忙阻止他说：“小安，你要先做热身运动才行！”", answer: 3 },
+            { text: "当我们做完热身运动，就跳进水里，快乐地游了起来。", answer: 5 },
+            { text: "到了游泳池，弟弟换上游泳裤，就想立刻跳进水里。", answer: 2 },
+            { text: "傍晚，我们依依不舍地回家了。", answer: 6 }
           ],
-          answer: [0, 1, 2, 3, 4, 5]
+          answer: [4, 3, 5, 2, 6],
+          finalText: "1. 星期天下午，爸爸带我和弟弟去游泳池游泳。 2. 到了游泳池，弟弟换上游泳裤，就想立刻跳进水里。 3. 爸爸急忙阻止他说：“小安，你要先做热身运动才行！” 4. 弟弟听了，只好乖乖地和我们一起做热身运动。 5. 当我们做完热身运动，就跳进水里，快乐地游了起来。 6. 傍晚，我们依依不舍地回家了。"
         },
         {
-          prompt: "组词成句：动物园 有 狮子 很多 里 凶猛的",
+          prompt: "组词成句",
           type: "words",
           parts: ["动物园", "有", "狮子", "很多", "里", "凶猛的"],
           answer: [0, 4, 1, 3, 5, 2],
           finalText: "动物园里有很多凶猛的狮子。"
         },
         {
-          prompt: "组词成句：小美 的 纸上 亮晶晶 在 画了 星星",
+          prompt: "组词成句",
           type: "words",
           parts: ["小美", "的", "纸上", "亮晶晶", "在", "画了", "星星"],
           answer: [0, 4, 2, 5, 3, 1, 6],
           finalText: "小美在纸上画了亮晶晶的星星。"
         },
         {
-          prompt: "组词成句：我 上 一张 贴在 邮票 信封 把",
+          prompt: "组词成句",
           type: "words",
           parts: ["我", "上", "一张", "贴在", "邮票", "信封", "把"],
           answer: [0, 6, 2, 4, 3, 5, 1],
           finalText: "我把一张邮票贴在信封上。"
         },
         {
-          prompt: "组词成句：一个 谜语 猜 出了 我 爸爸 让",
+          prompt: "组词成句",
           type: "words",
           parts: ["一个", "谜语", "猜", "出了", "我", "爸爸", "让"],
           answer: [5, 6, 4, 2, 3, 0, 1],
           finalText: "爸爸让我猜出了一个谜语。"
         },
         {
-          prompt: "组词成句：小丽 第一名 跳了起来 得了 她 考试 兴奋地",
+          prompt: "组词成句",
           type: "words",
           parts: ["小丽", "第一名", "跳了起来", "得了", "她", "考试", "兴奋地"],
           answer: [0, 5, 3, 1, 4, 6, 2],
@@ -826,7 +864,7 @@
             [...options.children].forEach(x => x.disabled = true);
             b.classList.add(isRight ? "good" : "bad");
             options.children[ans].classList.add("good");
-            answerLine.textContent = `正确答案：${opts[ans]}`;
+            answerLine.textContent = q.includes("____") ? `第${i + 1}题正确答案：${q.replace("____", opts[ans])}` : `第${i + 1}题正确答案：${opts[ans]}`;
             markQuestion(prefix + i, isRight);
           };
           options.appendChild(b);
@@ -841,6 +879,11 @@
         const row = document.createElement("div");
         row.className = "question";
         row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${item.prompt}</div><div class="answer-line"></div><div class="options"></div><div class="word-bank"></div>`;
+        if (item.type === "sequence") {
+          renderSequenceOrder(row, item, i);
+          list.appendChild(row);
+          return;
+        }
         const picked = [];
         const answerLine = row.querySelector(".answer-line");
         const options = row.querySelector(".options");
@@ -886,6 +929,79 @@
         options.appendChild(resetButton);
         list.appendChild(row);
       });
+    }
+    function renderSequenceOrder(row, item, index) {
+      const answerLine = row.querySelector(".answer-line");
+      const options = row.querySelector(".options");
+      const bank = row.querySelector(".word-bank");
+      const selected = new Map();
+      row.querySelector(".speak").onclick = () => speak([item.fixed, ...item.lines.map(line => line.text)].join(" "));
+      options.innerHTML = "";
+      bank.className = "sequence-card";
+      const fixedRow = document.createElement("div");
+      fixedRow.className = "sequence-row fixed";
+      fixedRow.innerHTML = `<div>（1）</div><div>${item.fixed}</div>`;
+      bank.appendChild(fixedRow);
+      function updateButtons() {
+        bank.querySelectorAll(".number-bank button").forEach(button => {
+          const number = Number(button.dataset.number);
+          const lineIndex = Number(button.dataset.line);
+          const usedByOtherLine = [...selected.entries()].some(([key, value]) => key !== lineIndex && value === number);
+          button.disabled = usedByOtherLine || done.has("o" + index);
+          button.classList.toggle("good", selected.get(lineIndex) === number);
+        });
+      }
+      function checkIfDone() {
+        if (selected.size !== item.lines.length) return;
+        const isRight = item.lines.every((line, lineIndex) => selected.get(lineIndex) === line.answer);
+        row.classList.toggle("good", isRight);
+        row.classList.toggle("bad", !isRight);
+        bank.querySelectorAll(".sequence-row:not(.fixed)").forEach((lineRow, lineIndex) => {
+          lineRow.classList.toggle("good", selected.get(lineIndex) === item.lines[lineIndex].answer);
+          lineRow.classList.toggle("bad", selected.get(lineIndex) !== item.lines[lineIndex].answer);
+        });
+        if (isRight) {
+          answerLine.textContent = "顺序正确。";
+          markQuestion("o" + index, true);
+          updateButtons();
+        } else {
+          answerLine.textContent = "有几句顺序不对，可以直接改序号。";
+          funnyWrongSound();
+        }
+      }
+      item.lines.forEach((line, lineIndex) => {
+        const lineRow = document.createElement("div");
+        lineRow.className = "sequence-row";
+        const numberBank = document.createElement("div");
+        numberBank.className = "number-bank";
+        item.choices.forEach(number => {
+          const button = document.createElement("button");
+          button.textContent = number;
+          button.dataset.number = number;
+          button.dataset.line = lineIndex;
+          button.onclick = () => {
+            if (done.has("o" + index)) return;
+            selected.set(lineIndex, number);
+            lineRow.classList.remove("good", "bad");
+            row.classList.remove("good", "bad");
+            updateButtons();
+            checkIfDone();
+          };
+          numberBank.appendChild(button);
+        });
+        const text = document.createElement("div");
+        text.textContent = line.text;
+        lineRow.append(numberBank, text);
+        bank.appendChild(lineRow);
+      });
+      const showAnswer = document.createElement("button");
+      showAnswer.className = "ghost";
+      showAnswer.textContent = "查看正确顺序";
+      showAnswer.onclick = () => {
+        answerLine.textContent = item.finalText;
+      };
+      options.appendChild(showAnswer);
+      updateButtons();
     }
     function renderCloze() {
       const list = document.getElementById("clozeList");
