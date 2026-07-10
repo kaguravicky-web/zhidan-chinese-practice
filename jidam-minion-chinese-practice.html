@@ -354,6 +354,7 @@
         <button class="tab active" data-panel="writingPanel">听写默写</button>
         <button class="tab" data-panel="mcqPanel">选择题</button>
         <button class="tab" data-panel="matchPanel">词语搭配</button>
+        <button class="tab" data-panel="orderPanel">排序组句</button>
         <button class="tab" data-panel="clozePanel">短文填空</button>
       </nav>
       <section class="panel active" id="writingPanel">
@@ -368,12 +369,16 @@
         <h2>词语搭配</h2>
         <div id="matchList"></div>
       </section>
+      <section class="panel" id="orderPanel">
+        <h2>排序组句</h2>
+        <div id="orderList"></div>
+      </section>
       <section class="panel" id="clozePanel">
         <h2>短文填空</h2>
         <div id="clozeList"></div>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-07-08-2</div>
+      <div class="version">v2026-07-10-1</div>
     </section>
   </main>
 
@@ -473,6 +478,104 @@
         " 小鸟的照片，然后才依依不舍地把小鸟送回 ",
         " 里。"
       ]
+    }, {
+      id: "lesson-11",
+      title: "下一周练习",
+      date: "2026-07 下一周",
+      summary: "补习班听写 12 项、选择题、词语搭配、排序成段、组词成句",
+      dictationGroups: [{
+        title: "学校听写：本周照片未提供",
+        items: []
+      }, {
+        title: "补习班听写：本周作业",
+        items: [
+          ["亮晶晶", "liang jing jing"], ["世界", "shi jie"], ["文件夹", "wen jian jia"], ["国庆", "guo qing"],
+          ["指着", "zhi zhe"], ["唱国歌", "chang guo ge"], ["兴奋", "xing fen"], ["新加坡", "xin jia po"],
+          ["礼物", "li wu"], ["设计", "she ji"], ["国旗", "guo qi"], ["竖起大拇指", "shu qi da mu zhi"]
+        ]
+      }],
+      words: [
+        ["亮晶晶", "liang jing jing"], ["世界", "shi jie"], ["文件夹", "wen jian jia"], ["国庆", "guo qing"],
+        ["指着", "zhi zhe"], ["唱国歌", "chang guo ge"], ["兴奋", "xing fen"], ["新加坡", "xin jia po"],
+        ["礼物", "li wu"], ["设计", "she ji"], ["国旗", "guo qi"], ["竖起大拇指", "shu qi da mu zhi"]
+      ],
+      sentences: [],
+      mcq: [
+        ["升旗手把国旗慢慢地升到空中。请选择“国旗”的正确读音。", ["gou qi", "kuo qi", "guo qi", "kou qi"], 2],
+        ["明天小明要上台领奖，他兴奋得睡不着觉。请选择“兴奋”的正确读音。", ["xing fen", "xing feng", "xin fen", "xin feng"], 0],
+        ["爷爷小时候的生____很贫苦，常常饿肚子。", ["活", "话", "适", "舌"], 0],
+        ["妹妹的一____门牙掉了，她吓得哭了起来。", ["棵", "颗", "课", "果"], 1],
+        ["姐姐____计了一张新年贺卡送给她的老师。", ["设", "没", "疲", "投"], 0],
+        ["星期天，小华要去东____岸玩。", ["梅", "每", "海", "悔"], 2],
+        ["这张沙发的____很特别，看起来特别精美。", ["设计", "生产", "制造", "模样"], 0],
+        ["外面下着大雨，我____他今天可能不会来了。", ["猜谜", "猜想", "猜猜", "猜中"], 1],
+        ["天上的星星____的，多像小孩子的眼睛！", ["黑漆漆", "绿油油", "白花花", "亮晶晶"], 3],
+        ["爸爸把画____墙上。", ["贴在", "放在", "摆在", "留在"], 0]
+      ],
+      match: [
+        ["各样", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 9],
+        ["升起", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 7],
+        ["设计", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 6],
+        ["月儿", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 2],
+        ["感到", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 4],
+        ["练习", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 5],
+        ["猜猜", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 3],
+        ["幸福", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 8],
+        ["国歌", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 1]
+      ],
+      order: [
+        {
+          prompt: "把游泳池故事排成一段。",
+          type: "sentences",
+          parts: [
+            "星期天下午，爸爸带我和弟弟去游泳池游泳。",
+            "到了游泳池，弟弟换上游泳裤，就想立刻跳进水里。",
+            "爸爸急忙阻止他说：“小安，你要先做热身运动才行！”",
+            "弟弟听了，只好乖乖地和我们一起做热身运动。",
+            "当我们做完热身运动，就跳进水里，快乐地游了起来。",
+            "傍晚，我们依依不舍地回家了。"
+          ],
+          answer: [0, 1, 2, 3, 4, 5]
+        },
+        {
+          prompt: "组词成句：动物园 有 狮子 很多 里 凶猛的",
+          type: "words",
+          parts: ["动物园", "有", "狮子", "很多", "里", "凶猛的"],
+          answer: [0, 4, 1, 3, 5, 2],
+          finalText: "动物园里有很多凶猛的狮子。"
+        },
+        {
+          prompt: "组词成句：小美 的 纸上 亮晶晶 在 画了 星星",
+          type: "words",
+          parts: ["小美", "的", "纸上", "亮晶晶", "在", "画了", "星星"],
+          answer: [0, 4, 2, 5, 3, 1, 6],
+          finalText: "小美在纸上画了亮晶晶的星星。"
+        },
+        {
+          prompt: "组词成句：我 上 一张 贴在 邮票 信封 把",
+          type: "words",
+          parts: ["我", "上", "一张", "贴在", "邮票", "信封", "把"],
+          answer: [0, 6, 2, 4, 3, 5, 1],
+          finalText: "我把一张邮票贴在信封上。"
+        },
+        {
+          prompt: "组词成句：一个 谜语 猜 出了 我 爸爸 让",
+          type: "words",
+          parts: ["一个", "谜语", "猜", "出了", "我", "爸爸", "让"],
+          answer: [5, 6, 4, 2, 3, 0, 1],
+          finalText: "爸爸让我猜出了一个谜语。"
+        },
+        {
+          prompt: "组词成句：小丽 第一名 跳了起来 得了 她 考试 兴奋地",
+          type: "words",
+          parts: ["小丽", "第一名", "跳了起来", "得了", "她", "考试", "兴奋地"],
+          answer: [0, 5, 3, 1, 4, 6, 2],
+          finalText: "小丽考试得了第一名，她兴奋地跳了起来。"
+        }
+      ],
+      clozeWords: [],
+      clozeAnswers: [],
+      clozeParts: ["这一课没有短文填空。"]
     }];
 
     const carModels = ["Cyber SUV", "蓝焰跑车", "星际赛车", "闪电越野车", "银翼概念车", "霓虹方程式", "磁悬浮小车"];
@@ -660,7 +763,7 @@
       right = 0;
       answered = 0;
       showCopies = true;
-      total = currentCourse.mcq.length + currentCourse.match.length + currentCourse.clozeAnswers.length;
+      total = currentCourse.mcq.length + currentCourse.match.length + (currentCourse.clozeAnswers || []).length + (currentCourse.order || []).length;
       document.getElementById("totalCount").textContent = total;
       document.getElementById("pageSub").textContent = currentCourse.title;
       document.getElementById("resultBox").style.display = "none";
@@ -670,15 +773,16 @@
       renderWriting();
       renderQuestions("mcqList", currentCourse.mcq, "m", "选择正确的字。");
       renderQuestions("matchList", currentCourse.match, "t", "选择可以搭配的词。");
+      renderOrder();
       renderCloze();
       updateScore();
     }
     function renderWriting() {
       const list = document.getElementById("writingList");
       list.innerHTML = "";
-      const groups = [
+      const groups = currentCourse.dictationGroups || [
         {
-          title: "学校听写：第十课",
+          title: `学校听写：${currentCourse.title}`,
           items: currentCourse.sentences.map(text => ({ text, pinyin: "" }))
         },
         {
@@ -687,12 +791,13 @@
         }
       ];
       groups.forEach(group => {
+        if (!group.items.length) return;
         const section = document.createElement("section");
         section.className = "dictation-group";
         section.innerHTML = `<div class="dictation-head"><h3>${group.title}</h3><button class="primary read-all">🔊 朗读全部</button></div><div class="dictation-list"></div>`;
         section.querySelector(".read-all").onclick = () => speak(group.items.map(x => x.text).join("。"));
         const itemList = section.querySelector(".dictation-list");
-        group.items.forEach((item, i) => {
+        group.items.map(item => Array.isArray(item) ? { text: item[0], pinyin: item[1] || "" } : item).forEach((item, i) => {
           const row = document.createElement("div");
           row.className = "dictation-item";
           row.innerHTML = `<span class="dictation-number">${i + 1}</span><div><div class="dictation-text">${item.text}</div><div class="pinyin">${item.pinyin}</div></div><button class="speak" title="朗读">🔊</button>`;
@@ -726,6 +831,59 @@
           };
           options.appendChild(b);
         });
+        list.appendChild(row);
+      });
+    }
+    function renderOrder() {
+      const list = document.getElementById("orderList");
+      list.innerHTML = "";
+      (currentCourse.order || []).forEach((item, i) => {
+        const row = document.createElement("div");
+        row.className = "question";
+        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${item.prompt}</div><div class="answer-line"></div><div class="options"></div><div class="word-bank"></div>`;
+        const picked = [];
+        const answerLine = row.querySelector(".answer-line");
+        const options = row.querySelector(".options");
+        const bank = row.querySelector(".word-bank");
+        row.querySelector(".speak").onclick = () => speak(item.prompt);
+        function refresh() {
+          answerLine.textContent = picked.map(index => item.parts[index]).join(item.type === "words" ? "" : " ");
+        }
+        function reset() {
+          picked.length = 0;
+          answerLine.textContent = "";
+          row.classList.remove("good", "bad");
+          [...bank.children].forEach(button => {
+            button.disabled = false;
+            button.classList.remove("good", "bad");
+          });
+        }
+        item.parts.forEach((part, index) => {
+          const button = document.createElement("button");
+          button.textContent = item.type === "sentences" ? `${index + 1}. ${part}` : part;
+          button.onclick = () => {
+            picked.push(index);
+            button.disabled = true;
+            refresh();
+            if (picked.length === item.answer.length) {
+              const isRight = item.answer.every((answerIndex, orderIndex) => answerIndex === picked[orderIndex]);
+              row.classList.add(isRight ? "good" : "bad");
+              answerLine.textContent = isRight ? (item.finalText || picked.map(index => item.parts[index]).join("")) : `再排一次。正确答案：${item.finalText || item.answer.map(index => item.parts[index]).join(item.type === "words" ? "" : " ")}`;
+              [...bank.children].forEach(x => x.classList.toggle("good", isRight));
+              if (isRight) {
+                markQuestion("o" + i, true);
+              } else {
+                funnyWrongSound();
+              }
+            }
+          };
+          bank.appendChild(button);
+        });
+        const resetButton = document.createElement("button");
+        resetButton.className = "ghost";
+        resetButton.textContent = "重排";
+        resetButton.onclick = reset;
+        options.appendChild(resetButton);
         list.appendChild(row);
       });
     }

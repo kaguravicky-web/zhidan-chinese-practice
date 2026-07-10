@@ -2,10 +2,993 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="refresh" content="0; url=jidam-minion-chinese-practice.html">
-  <title>Jidam 中文练习</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>智澹中文练习</title>
+  <style>
+    :root {
+      --blue: #1f6fbf;
+      --blue-dark: #154a80;
+      --blue-soft: #eaf4ff;
+      --bg: #f6f9fc;
+      --card: #ffffff;
+      --text: #17212b;
+      --muted: #637083;
+      --line: #d9e4ef;
+      --ok: #1f8a50;
+      --bad: #c94b42;
+      --grid: #d9b957;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+    body::before {
+      content: "";
+      display: block;
+      height: 8px;
+      background: repeating-linear-gradient(90deg, #1769aa 0 54px, #fff 54px 74px, #f2c94c 74px 128px, #fff 128px 148px);
+    }
+    header {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .top {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 14px 18px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+    h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); color: var(--blue-dark); letter-spacing: 0; }
+    h2 { margin: 0 0 12px; color: var(--blue-dark); }
+    .sub { margin: 4px 0 0; color: var(--muted); font-weight: 700; }
+    .score {
+      min-width: 156px;
+      border-radius: 8px;
+      background: var(--blue-soft);
+      padding: 10px 12px;
+      text-align: center;
+      font-weight: 800;
+      color: var(--blue-dark);
+    }
+    .parent-open { justify-self: end; }
+    .voice-panel {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    dialog {
+      width: min(680px, calc(100% - 28px));
+      border: 0;
+      border-radius: 8px;
+      padding: 0;
+      box-shadow: 0 22px 70px rgba(10, 48, 84, .28);
+    }
+    dialog::backdrop { background: rgba(20, 48, 75, .48); }
+    .parent-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 18px;
+      color: #fff;
+      background: var(--blue-dark);
+    }
+    .parent-head h2 { margin: 0; color: #fff; }
+    .parent-body { padding: 18px; }
+    .setting-block { padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .setting-block:last-child { border-bottom: 0; }
+    .upload-zone {
+      display: block;
+      margin-top: 10px;
+      padding: 20px;
+      text-align: center;
+      border: 2px dashed #8bb7df;
+      border-radius: 8px;
+      background: var(--blue-soft);
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .upload-zone input { display: none; }
+    .photo-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .photo-preview img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; }
+    select, input[type="range"] {
+      min-height: 36px;
+      border: 1px solid #bfd0e2;
+      border-radius: 8px;
+      background: #fff;
+      padding: 4px 8px;
+      font: inherit;
+    }
+    main { max-width: 1180px; margin: 0 auto; padding: 18px; }
+    button {
+      font: inherit;
+      border: 1px solid #bfd0e2;
+      border-radius: 8px;
+      min-height: 42px;
+      padding: 8px 13px;
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 700;
+    }
+    button:hover { border-color: var(--blue); }
+    button.primary { background: var(--blue); border-color: var(--blue); color: white; }
+    button.ghost { background: transparent; }
+    button.good { background: #e4f6eb; border-color: var(--ok); color: #126236; }
+    button.bad { background: #ffe9e7; border-color: var(--bad); color: #9b2c25; }
+    button:disabled { cursor: default; opacity: 1; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .course-card, .panel, .practice-card, .garage {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 8px 22px rgba(28, 73, 118, .06);
+    }
+    .course-card { padding: 18px; }
+    .course-card::before {
+      content: "🏎️  本周赛道";
+      display: block;
+      margin-bottom: 10px;
+      color: var(--blue);
+      font-weight: 900;
+    }
+    .course-card h2 { font-size: 24px; }
+    .course-meta { color: var(--muted); line-height: 1.7; margin: 10px 0 16px; }
+    .garage { margin-top: 16px; padding: 16px; }
+    .garage h2::before { content: "🏁 "; }
+    .car-row { display: flex; gap: 10px; flex-wrap: wrap; min-height: 48px; align-items: center; }
+    .car {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--blue-soft);
+      color: var(--blue-dark);
+      font-weight: 800;
+    }
+    .panel { display: none; padding: 16px; }
+    .panel.active { display: block; }
+    .back-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; }
+    .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 10px 0 14px; }
+    .note { color: var(--muted); font-weight: 700; }
+    .practice-list { display: grid; gap: 14px; }
+    .practice-card { padding: 14px; }
+    .dictation-group { margin-bottom: 18px; }
+    .dictation-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .dictation-head h3 { margin: 0; color: var(--blue-dark); font-size: 22px; }
+    .dictation-list { display: grid; gap: 8px; }
+    .dictation-item {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) 52px;
+      gap: 10px;
+      align-items: center;
+      min-height: 66px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .dictation-number { color: var(--blue); font-size: 20px; font-weight: 900; }
+    .dictation-text { font-size: 22px; font-weight: 800; line-height: 1.45; }
+    .card-head {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .speak { width: 44px; padding: 0; }
+    .item-title { font-size: 22px; font-weight: 800; }
+    .pinyin { color: var(--muted); font-size: 14px; }
+    .copy-text {
+      margin: 12px 0;
+      min-height: 34px;
+      font-size: 28px;
+      color: rgba(23, 33, 43, .38);
+      font-weight: 800;
+      line-height: 1.6;
+    }
+    .copy-text.hidden { font-size: 20px; color: var(--muted); }
+    .tianzige-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 10px 0; }
+    .tianzi {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      border: 2px solid var(--grid);
+      border-radius: 4px;
+      background:
+        linear-gradient(90deg, transparent 49.4%, rgba(217,185,87,.7) 49.4% 50.6%, transparent 50.6%),
+        linear-gradient(transparent 49.4%, rgba(217,185,87,.7) 49.4% 50.6%, transparent 50.6%),
+        linear-gradient(45deg, transparent 49.5%, rgba(217,185,87,.42) 49.5% 50.5%, transparent 50.5%),
+        linear-gradient(-45deg, transparent 49.5%, rgba(217,185,87,.42) 49.5% 50.5%, transparent 50.5%),
+        #fffefa;
+    }
+    .trace-char {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 104px;
+      font-weight: 800;
+      color: rgba(23,33,43,.16);
+      pointer-events: none;
+      user-select: none;
+    }
+    .draw {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      cursor: crosshair;
+    }
+    .question {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .qtext { font-size: 20px; line-height: 1.55; }
+    .options {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+    }
+    .option { text-align: left; min-height: 46px; }
+    .answer-line { grid-column: 1 / -1; min-height: 24px; font-weight: 800; color: var(--blue-dark); }
+    .cloze-box {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      line-height: 2.05;
+      font-size: 22px;
+    }
+    .blank {
+      display: inline-block;
+      min-width: 96px;
+      padding: 0 8px;
+      border-bottom: 3px solid var(--blue);
+      text-align: center;
+      font-weight: 800;
+      color: var(--blue);
+    }
+    .blank.bad { border-color: var(--bad); color: var(--bad); background: #fff0ef; }
+    .blank.good { border-color: var(--ok); color: var(--ok); background: #eaf8ef; }
+    .word-bank { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+    .result {
+      display: none;
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #eaf4ff, #fff);
+      border: 1px solid var(--line);
+      text-align: center;
+    }
+    .version {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+    .result h2 { font-size: 30px; }
+    @media (max-width: 760px) {
+      .top { grid-template-columns: 1fr; }
+      .score { text-align: left; }
+      .card-head { grid-template-columns: auto 1fr auto; }
+      .card-head .toggle-copy { grid-column: 1 / -1; }
+      .tianzi { width: 140px; height: 140px; }
+      .trace-char { font-size: 88px; }
+    }
+  </style>
 </head>
 <body>
-  <a href="jidam-minion-chinese-practice.html">打开 Jidam 中文练习</a>
+  <header>
+    <div class="top">
+      <div>
+        <h1>智澹中文练习</h1>
+        <p class="sub" id="pageSub">每周课程复习</p>
+      </div>
+      <div class="score">
+        <div>本次：<span id="doneCount">0</span>/<span id="totalCount">0</span></div>
+        <div>得分：<span id="scoreText">0</span></div>
+      </div>
+      <button class="parent-open" id="openParent">⚙ 家长设置</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="view active" id="homeView">
+      <div class="home-grid" id="courseList"></div>
+      <div class="garage">
+        <h2>智澹的车库</h2>
+        <div class="car-row" id="garageCars"></div>
+      </div>
+    </section>
+
+    <section class="view" id="courseView">
+      <div class="back-row">
+        <button class="ghost" id="backHome">← 返回课程主页</button>
+        <span class="note">先朗读听写清单，再完成课堂练习。</span>
+      </div>
+      <nav class="tabs">
+        <button class="tab active" data-panel="writingPanel">听写默写</button>
+        <button class="tab" data-panel="mcqPanel">选择题</button>
+        <button class="tab" data-panel="matchPanel">词语搭配</button>
+        <button class="tab" data-panel="orderPanel">排序组句</button>
+        <button class="tab" data-panel="clozePanel">短文填空</button>
+      </nav>
+      <section class="panel active" id="writingPanel">
+        <h2>本周听写</h2>
+        <div class="practice-list" id="writingList"></div>
+      </section>
+      <section class="panel" id="mcqPanel">
+        <h2>选择题</h2>
+        <div id="mcqList"></div>
+      </section>
+      <section class="panel" id="matchPanel">
+        <h2>词语搭配</h2>
+        <div id="matchList"></div>
+      </section>
+      <section class="panel" id="orderPanel">
+        <h2>排序组句</h2>
+        <div id="orderList"></div>
+      </section>
+      <section class="panel" id="clozePanel">
+        <h2>短文填空</h2>
+        <div id="clozeList"></div>
+      </section>
+      <section class="result" id="resultBox"></section>
+      <div class="version">v2026-07-10-1</div>
+    </section>
+  </main>
+
+  <dialog id="parentDialog">
+    <div class="parent-head">
+      <h2>家长设置</h2>
+      <button id="closeParent" aria-label="关闭家长设置">✕</button>
+    </div>
+    <div class="parent-body">
+      <div class="setting-block">
+        <h3>朗读声音</h3>
+        <div class="voice-panel">
+          <select id="voiceSelect" aria-label="选择朗读声音"></select>
+          <span>语速</span>
+          <input id="rateSlider" type="range" min="0.35" max="0.8" step="0.05" value="0.5" aria-label="语速">
+          <span id="rateText">慢</span>
+          <button id="testVoice">试听</button>
+        </div>
+      </div>
+      <div class="setting-block">
+        <h3>生成下一节课</h3>
+        <p class="note">上传本周听写和课堂练习照片，可一次选择多张。</p>
+        <label class="upload-zone">📷 选择作业照片
+          <input id="lessonPhotos" type="file" accept="image/*" multiple>
+        </label>
+        <div class="photo-preview" id="photoPreview"></div>
+        <p class="note" id="uploadStatus">尚未选择照片</p>
+        <button class="primary" id="prepareLesson" disabled>准备下一课资料</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    const courses = [{
+      id: "lesson-10",
+      title: "第十课",
+      date: "本周练习",
+      summary: "学校听写 8 项、补习班听写 16 项、选择题、词语搭配、短文填空",
+      words: [
+        ["收拾", "shou shi"], ["漂亮", "piao liang"], ["追上", "zhui shang"], ["觉得", "jue de"],
+        ["决定", "jue ding"], ["保持", "bao chi"], ["伸出手", "shen chu shou"], ["浪费", "lang fei"],
+        ["一份报纸", "yi fen bao zhi"], ["废物", "fei wu"], ["使用", "shi yong"], ["环境", "huan jing"],
+        ["塑料袋", "su liao dai"], ["责任", "ze ren"], ["如果", "ru guo"], ["乱扔垃圾", "luan reng la ji"]
+      ],
+      sentences: [
+        "收拾桌子", "保护环境", "感到吃惊", "伸出双手", "快步追上", "一枝漂亮的花",
+        "只有多练习，你才能跑得更快",
+        "我觉得乱扔垃圾是不对的，因为会把地板弄脏"
+      ],
+      mcq: [
+        ["姑姑年轻时的____子很美丽。", ["祥", "样", "详", "洋"], 1],
+        ["小乐不爱____书，只喜欢玩电脑。", ["读", "续", "实", "卖"], 0],
+        ["你____住我说的话了吗？", ["己", "已", "记", "纪"], 2],
+        ["小明每年都考____一名，我们要向他学习。", ["弟", "沸", "第", "梯"], 2],
+        ["我有一个____望，长大后当一名医生。", ["圆", "愿", "员", "原"], 1],
+        ["我要____力学习，将来做一个有用的人。", ["如", "奴", "怒", "努"], 3],
+        ["你知道我们的华文老师____什么吗？", ["胜", "生", "性", "姓"], 3],
+        ["弟弟很____明，学什么都很快。", ["总", "聪", "从", "匆"], 1],
+        ["爸爸每天都做运动，身体十分强____。", ["装", "庄", "状", "壮"], 3],
+        ["小丽不明白一些词语的____思，就去请教老师。", ["宜", "易", "意", "益"], 2],
+        ["他是马来人，听不____华语。", ["懂", "东", "动", "洞"], 0],
+        ["哥哥的____受伤了，只好留在家里休养。", ["角", "脚", "交", "胶"], 1],
+        ["爷爷每天____晚都会到公园去散步。", ["旁", "榜", "傍", "膀"], 2],
+        ["现在正下着大雨，他____许等雨停了才会来。", ["式", "或", "咸", "感"], 1],
+        ["我们沿路留下了许多记____，以免迷失方向。", ["号", "奇", "吴", "夺"], 0],
+        ["她把跌倒的老奶奶____了起来。", ["附", "夫", "付", "扶"], 3],
+        ["小美代____学校参加全国的画画比赛。", ["青", "表", "养", "着"], 1],
+        ["弟弟起床晚了，来不____吃早餐便去上学了。", ["及", "级", "极", "吸"], 0],
+        ["一只猴子____到树上睡觉。", ["吧", "爬", "把", "巴"], 1],
+        ["我们进屋要先____鞋，以免弄脏地板。", ["脱", "说", "悦", "兑"], 0],
+        ["保护____是每个人的责任。", ["环境", "废物", "报纸", "书包"], 0],
+        ["我们不应该____纸张和食物。", ["决定", "浪费", "使用", "庆祝"], 1]
+      ],
+      match: [
+        ["写", ["信", "水电", "机会", "节日"], 0],
+        ["结束", ["比赛", "同学", "消息", "试卷"], 0],
+        ["代表", ["学校", "水电", "果实", "地板"], 0],
+        ["检查", ["试卷", "节日", "垃圾", "招呼"], 0],
+        ["听到", ["消息", "机会", "用品", "清洁"], 0],
+        ["失去", ["机会", "环境", "同学", "书包"], 0],
+        ["浪费", ["水电", "试卷", "各种", "果实"], 0],
+        ["庆祝", ["节日", "地板", "责任", "报纸"], 0],
+        ["保护", ["环境", "同学", "比赛", "消息"], 0],
+        ["做出", ["决定", "清洁", "书包", "招呼"], 0],
+        ["打个", ["招呼", "果实", "废物", "用品"], 0],
+        ["保持", ["清洁", "因为", "如果", "塑料袋"], 0],
+        ["弄脏", ["地板", "节日", "试卷", "消息"], 0],
+        ["收拾", ["书包", "机会", "水电", "同学"], 0]
+      ],
+      clozeWords: ["水池", "收养", "森林", "急忙", "拍下", "沿着", "山洞", "组织"],
+      clozeAnswers: ["沿着", "急忙", "收养", "拍下", "森林"],
+      clozeParts: [
+        "小文很顽皮，常常用石头、树枝去打树上的小鸟。有一天放学后，小文 ",
+        " 小路往前走。忽然，他看见树下有一只受伤的小鸟，身上流着血，痛苦地叫着。小文看到了，觉得小鸟很可怜，竟然有了同情心。他 ",
+        " 上前捧起小鸟，把它带回家去包扎伤口，还给小鸟做了一个窝，打算 ",
+        " 它。几天后，小鸟的伤好了。它望着窗外，好像想飞出去。小文知道小鸟想妈妈了，于是，他先用手机 ",
+        " 小鸟的照片，然后才依依不舍地把小鸟送回 ",
+        " 里。"
+      ]
+    }, {
+      id: "lesson-11",
+      title: "下一周练习",
+      date: "2026-07 下一周",
+      summary: "补习班听写 12 项、选择题、词语搭配、排序成段、组词成句",
+      dictationGroups: [{
+        title: "学校听写：本周照片未提供",
+        items: []
+      }, {
+        title: "补习班听写：本周作业",
+        items: [
+          ["亮晶晶", "liang jing jing"], ["世界", "shi jie"], ["文件夹", "wen jian jia"], ["国庆", "guo qing"],
+          ["指着", "zhi zhe"], ["唱国歌", "chang guo ge"], ["兴奋", "xing fen"], ["新加坡", "xin jia po"],
+          ["礼物", "li wu"], ["设计", "she ji"], ["国旗", "guo qi"], ["竖起大拇指", "shu qi da mu zhi"]
+        ]
+      }],
+      words: [
+        ["亮晶晶", "liang jing jing"], ["世界", "shi jie"], ["文件夹", "wen jian jia"], ["国庆", "guo qing"],
+        ["指着", "zhi zhe"], ["唱国歌", "chang guo ge"], ["兴奋", "xing fen"], ["新加坡", "xin jia po"],
+        ["礼物", "li wu"], ["设计", "she ji"], ["国旗", "guo qi"], ["竖起大拇指", "shu qi da mu zhi"]
+      ],
+      sentences: [],
+      mcq: [
+        ["升旗手把国旗慢慢地升到空中。请选择“国旗”的正确读音。", ["gou qi", "kuo qi", "guo qi", "kou qi"], 2],
+        ["明天小明要上台领奖，他兴奋得睡不着觉。请选择“兴奋”的正确读音。", ["xing fen", "xing feng", "xin fen", "xin feng"], 0],
+        ["爷爷小时候的生____很贫苦，常常饿肚子。", ["活", "话", "适", "舌"], 0],
+        ["妹妹的一____门牙掉了，她吓得哭了起来。", ["棵", "颗", "课", "果"], 1],
+        ["姐姐____计了一张新年贺卡送给她的老师。", ["设", "没", "疲", "投"], 0],
+        ["星期天，小华要去东____岸玩。", ["梅", "每", "海", "悔"], 2],
+        ["这张沙发的____很特别，看起来特别精美。", ["设计", "生产", "制造", "模样"], 0],
+        ["外面下着大雨，我____他今天可能不会来了。", ["猜谜", "猜想", "猜猜", "猜中"], 1],
+        ["天上的星星____的，多像小孩子的眼睛！", ["黑漆漆", "绿油油", "白花花", "亮晶晶"], 3],
+        ["爸爸把画____墙上。", ["贴在", "放在", "摆在", "留在"], 0]
+      ],
+      match: [
+        ["各样", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 9],
+        ["升起", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 7],
+        ["设计", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 6],
+        ["月儿", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 2],
+        ["感到", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 4],
+        ["练习", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 5],
+        ["猜猜", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 3],
+        ["幸福", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 8],
+        ["国歌", ["野餐", "播放", "弯弯", "谜语", "兴奋", "唱歌", "卡片", "国旗", "生活", "各种"], 1]
+      ],
+      order: [
+        {
+          prompt: "把游泳池故事排成一段。",
+          type: "sentences",
+          parts: [
+            "星期天下午，爸爸带我和弟弟去游泳池游泳。",
+            "到了游泳池，弟弟换上游泳裤，就想立刻跳进水里。",
+            "爸爸急忙阻止他说：“小安，你要先做热身运动才行！”",
+            "弟弟听了，只好乖乖地和我们一起做热身运动。",
+            "当我们做完热身运动，就跳进水里，快乐地游了起来。",
+            "傍晚，我们依依不舍地回家了。"
+          ],
+          answer: [0, 1, 2, 3, 4, 5]
+        },
+        {
+          prompt: "组词成句：动物园 有 狮子 很多 里 凶猛的",
+          type: "words",
+          parts: ["动物园", "有", "狮子", "很多", "里", "凶猛的"],
+          answer: [0, 4, 1, 3, 5, 2],
+          finalText: "动物园里有很多凶猛的狮子。"
+        },
+        {
+          prompt: "组词成句：小美 的 纸上 亮晶晶 在 画了 星星",
+          type: "words",
+          parts: ["小美", "的", "纸上", "亮晶晶", "在", "画了", "星星"],
+          answer: [0, 4, 2, 5, 3, 1, 6],
+          finalText: "小美在纸上画了亮晶晶的星星。"
+        },
+        {
+          prompt: "组词成句：我 上 一张 贴在 邮票 信封 把",
+          type: "words",
+          parts: ["我", "上", "一张", "贴在", "邮票", "信封", "把"],
+          answer: [0, 6, 2, 4, 3, 5, 1],
+          finalText: "我把一张邮票贴在信封上。"
+        },
+        {
+          prompt: "组词成句：一个 谜语 猜 出了 我 爸爸 让",
+          type: "words",
+          parts: ["一个", "谜语", "猜", "出了", "我", "爸爸", "让"],
+          answer: [5, 6, 4, 2, 3, 0, 1],
+          finalText: "爸爸让我猜出了一个谜语。"
+        },
+        {
+          prompt: "组词成句：小丽 第一名 跳了起来 得了 她 考试 兴奋地",
+          type: "words",
+          parts: ["小丽", "第一名", "跳了起来", "得了", "她", "考试", "兴奋地"],
+          answer: [0, 5, 3, 1, 4, 6, 2],
+          finalText: "小丽考试得了第一名，她兴奋地跳了起来。"
+        }
+      ],
+      clozeWords: [],
+      clozeAnswers: [],
+      clozeParts: ["这一课没有短文填空。"]
+    }];
+
+    const carModels = ["Cyber SUV", "蓝焰跑车", "星际赛车", "闪电越野车", "银翼概念车", "霓虹方程式", "磁悬浮小车"];
+    let currentCourse = null;
+    let showCopies = true;
+    let done = new Set();
+    let right = 0;
+    let answered = 0;
+    let total = 0;
+    let selectedVoiceName = "";
+    let speechRate = 0.5;
+
+    const audioCtx = () => new (window.AudioContext || window.webkitAudioContext)();
+    function tone(freq, duration, type = "sine", gainValue = 0.08, delay = 0) {
+      const ctx = window._ctx || (window._ctx = audioCtx());
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = freq;
+      osc.type = type;
+      gain.gain.value = gainValue;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+      osc.stop(ctx.currentTime + delay + duration);
+    }
+    function clapSound() {
+      tone(760, .08, "square", .045, 0);
+      tone(980, .08, "square", .045, .09);
+      tone(1180, .11, "triangle", .04, .18);
+    }
+    function funnyWrongSound() {
+      tone(260, .12, "sawtooth", .045, 0);
+      tone(150, .18, "sawtooth", .04, .12);
+    }
+    function speak(text) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "zh-CN";
+      u.rate = speechRate;
+      u.pitch = 0.78;
+      const voices = window.speechSynthesis.getVoices();
+      const selected = voices.find(v => v.name === selectedVoiceName);
+      const male = voices.find(v => /zh/i.test(v.lang) && /Yunxi|Yunjian|Kangkang|Male|男|云希|云健/i.test(v.name));
+      const zh = voices.find(v => /zh/i.test(v.lang));
+      u.voice = selected || male || zh || null;
+      window.speechSynthesis.speak(u);
+    }
+    function renderVoices() {
+      const select = document.getElementById("voiceSelect");
+      const voices = window.speechSynthesis.getVoices();
+      const zhVoices = voices.filter(v => /zh/i.test(v.lang) || /Chinese|Mandarin|普通话|中文|云希|云健|晓晓/i.test(v.name));
+      select.innerHTML = "";
+      const auto = document.createElement("option");
+      auto.value = "";
+      auto.textContent = "自动选择中文男声";
+      select.appendChild(auto);
+      zhVoices.forEach(v => {
+        const option = document.createElement("option");
+        option.value = v.name;
+        option.textContent = `${v.name} (${v.lang})`;
+        select.appendChild(option);
+      });
+      select.value = selectedVoiceName;
+    }
+    window.speechSynthesis.onvoiceschanged = renderVoices;
+
+    function visibleChars(text) {
+      return [...text].filter(ch => !/[，。！？、；：,.!?;:\s]/.test(ch));
+    }
+    function prepareCanvas(canvas) {
+      const resize = () => {
+        const ratio = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+        canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+        const ctx = canvas.getContext("2d");
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.lineWidth = 7 * ratio;
+        ctx.strokeStyle = "#111827";
+        canvas._ctx = ctx;
+        canvas._ratio = ratio;
+      };
+      resize();
+      let drawing = false;
+      const pos = e => {
+        const r = canvas.getBoundingClientRect();
+        return { x: (e.clientX - r.left) * canvas._ratio, y: (e.clientY - r.top) * canvas._ratio };
+      };
+      canvas.addEventListener("pointerdown", e => {
+        e.preventDefault();
+        canvas.setPointerCapture(e.pointerId);
+        drawing = true;
+        const p = pos(e);
+        canvas._ctx.beginPath();
+        canvas._ctx.moveTo(p.x, p.y);
+      });
+      canvas.addEventListener("pointermove", e => {
+        if (!drawing) return;
+        e.preventDefault();
+        const p = pos(e);
+        canvas._ctx.lineTo(p.x, p.y);
+        canvas._ctx.stroke();
+      });
+      canvas.addEventListener("pointerup", () => drawing = false);
+      canvas.addEventListener("pointercancel", () => drawing = false);
+      canvas.clearBox = () => canvas._ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    function makeTianziRow(text) {
+      const row = document.createElement("div");
+      row.className = "tianzige-row";
+      visibleChars(text).forEach(ch => {
+        const box = document.createElement("div");
+        box.className = "tianzi";
+        box.innerHTML = `<span class="trace-char">${showCopies ? ch : ""}</span><canvas class="draw"></canvas>`;
+        row.appendChild(box);
+        requestAnimationFrame(() => prepareCanvas(box.querySelector("canvas")));
+      });
+      return row;
+    }
+    function markWriting(id, button) {
+      if (!done.has(id)) {
+        done.add(id);
+        right += 1;
+        answered += 1;
+        clapSound();
+      }
+      button.textContent = "已完成";
+      button.classList.add("good");
+      updateScore();
+    }
+    function markQuestion(id, isRight) {
+      if (!done.has(id)) {
+        done.add(id);
+        answered += 1;
+        if (isRight) right += 1;
+      }
+      isRight ? clapSound() : funnyWrongSound();
+      updateScore();
+    }
+    function updateScore() {
+      document.getElementById("doneCount").textContent = done.size;
+      document.getElementById("scoreText").textContent = total ? Math.round((right / total) * 100) : 0;
+      if (done.size >= total) finishCourse();
+    }
+    function finishCourse() {
+      const percent = Math.round((right / total) * 100);
+      const garage = JSON.parse(localStorage.getItem("jidamGarage") || "[]");
+      if (!garage.some(x => x.courseId === currentCourse.id)) {
+        garage.push({ courseId: currentCourse.id, car: carModels[garage.length % carModels.length], score: percent });
+        localStorage.setItem("jidamGarage", JSON.stringify(garage));
+      }
+      document.getElementById("resultBox").style.display = "block";
+      document.getElementById("resultBox").innerHTML = `<h2>${percent} 分</h2><p>完成 ${currentCourse.title}，获得新车模型：${garage.find(x => x.courseId === currentCourse.id).car}</p>`;
+      renderGarage();
+    }
+
+    function renderHome() {
+      const list = document.getElementById("courseList");
+      list.innerHTML = "";
+      courses.forEach(course => {
+        const card = document.createElement("article");
+        card.className = "course-card";
+        card.innerHTML = `<h2>${course.title}</h2><div class="course-meta">${course.date}<br>${course.summary}</div><button class="primary">开始练习</button>`;
+        card.querySelector("button").onclick = () => openCourse(course.id);
+        list.appendChild(card);
+      });
+      renderGarage();
+    }
+    function renderGarage() {
+      const garage = JSON.parse(localStorage.getItem("jidamGarage") || "[]");
+      const row = document.getElementById("garageCars");
+      row.innerHTML = garage.length ? "" : "<span class='note'>完成一课后会获得一个车模型。</span>";
+      garage.forEach(item => {
+        const car = document.createElement("span");
+        car.className = "car";
+        car.textContent = `🏎️ ${item.car} ${item.score}分`;
+        row.appendChild(car);
+      });
+    }
+    function openCourse(id) {
+      currentCourse = courses.find(c => c.id === id);
+      done = new Set();
+      right = 0;
+      answered = 0;
+      showCopies = true;
+      total = currentCourse.mcq.length + currentCourse.match.length + (currentCourse.clozeAnswers || []).length + (currentCourse.order || []).length;
+      document.getElementById("totalCount").textContent = total;
+      document.getElementById("pageSub").textContent = currentCourse.title;
+      document.getElementById("resultBox").style.display = "none";
+      document.getElementById("homeView").classList.remove("active");
+      document.getElementById("courseView").classList.add("active");
+      setActivePanel("writingPanel");
+      renderWriting();
+      renderQuestions("mcqList", currentCourse.mcq, "m", "选择正确的字。");
+      renderQuestions("matchList", currentCourse.match, "t", "选择可以搭配的词。");
+      renderOrder();
+      renderCloze();
+      updateScore();
+    }
+    function renderWriting() {
+      const list = document.getElementById("writingList");
+      list.innerHTML = "";
+      const groups = currentCourse.dictationGroups || [
+        {
+          title: `学校听写：${currentCourse.title}`,
+          items: currentCourse.sentences.map(text => ({ text, pinyin: "" }))
+        },
+        {
+          title: "补习班听写：本周作业",
+          items: currentCourse.words.map(([text, pinyin]) => ({ text, pinyin }))
+        }
+      ];
+      groups.forEach(group => {
+        if (!group.items.length) return;
+        const section = document.createElement("section");
+        section.className = "dictation-group";
+        section.innerHTML = `<div class="dictation-head"><h3>${group.title}</h3><button class="primary read-all">🔊 朗读全部</button></div><div class="dictation-list"></div>`;
+        section.querySelector(".read-all").onclick = () => speak(group.items.map(x => x.text).join("。"));
+        const itemList = section.querySelector(".dictation-list");
+        group.items.map(item => Array.isArray(item) ? { text: item[0], pinyin: item[1] || "" } : item).forEach((item, i) => {
+          const row = document.createElement("div");
+          row.className = "dictation-item";
+          row.innerHTML = `<span class="dictation-number">${i + 1}</span><div><div class="dictation-text">${item.text}</div><div class="pinyin">${item.pinyin}</div></div><button class="speak" title="朗读">🔊</button>`;
+          row.querySelector(".speak").onclick = () => speak(item.text);
+          itemList.appendChild(row);
+        });
+        list.appendChild(section);
+      });
+    }
+    function renderQuestions(target, data, prefix, speechPrefix) {
+      const list = document.getElementById(target);
+      list.innerHTML = "";
+      data.forEach(([q, opts, ans], i) => {
+        const row = document.createElement("div");
+        row.className = "question";
+        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${q}</div><div class="options"></div><div class="answer-line"></div>`;
+        row.querySelector(".speak").onclick = () => speak(`${speechPrefix}${q.replace("____", "空格")}`);
+        const options = row.querySelector(".options");
+        const answerLine = row.querySelector(".answer-line");
+        opts.forEach((o, j) => {
+          const b = document.createElement("button");
+          b.className = "option";
+          b.textContent = `${j + 1}. ${o}`;
+          b.onclick = () => {
+            const isRight = j === ans;
+            [...options.children].forEach(x => x.disabled = true);
+            b.classList.add(isRight ? "good" : "bad");
+            options.children[ans].classList.add("good");
+            answerLine.textContent = `正确答案：${opts[ans]}`;
+            markQuestion(prefix + i, isRight);
+          };
+          options.appendChild(b);
+        });
+        list.appendChild(row);
+      });
+    }
+    function renderOrder() {
+      const list = document.getElementById("orderList");
+      list.innerHTML = "";
+      (currentCourse.order || []).forEach((item, i) => {
+        const row = document.createElement("div");
+        row.className = "question";
+        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${item.prompt}</div><div class="answer-line"></div><div class="options"></div><div class="word-bank"></div>`;
+        const picked = [];
+        const answerLine = row.querySelector(".answer-line");
+        const options = row.querySelector(".options");
+        const bank = row.querySelector(".word-bank");
+        row.querySelector(".speak").onclick = () => speak(item.prompt);
+        function refresh() {
+          answerLine.textContent = picked.map(index => item.parts[index]).join(item.type === "words" ? "" : " ");
+        }
+        function reset() {
+          picked.length = 0;
+          answerLine.textContent = "";
+          row.classList.remove("good", "bad");
+          [...bank.children].forEach(button => {
+            button.disabled = false;
+            button.classList.remove("good", "bad");
+          });
+        }
+        item.parts.forEach((part, index) => {
+          const button = document.createElement("button");
+          button.textContent = item.type === "sentences" ? `${index + 1}. ${part}` : part;
+          button.onclick = () => {
+            picked.push(index);
+            button.disabled = true;
+            refresh();
+            if (picked.length === item.answer.length) {
+              const isRight = item.answer.every((answerIndex, orderIndex) => answerIndex === picked[orderIndex]);
+              row.classList.add(isRight ? "good" : "bad");
+              answerLine.textContent = isRight ? (item.finalText || picked.map(index => item.parts[index]).join("")) : `再排一次。正确答案：${item.finalText || item.answer.map(index => item.parts[index]).join(item.type === "words" ? "" : " ")}`;
+              [...bank.children].forEach(x => x.classList.toggle("good", isRight));
+              if (isRight) {
+                markQuestion("o" + i, true);
+              } else {
+                funnyWrongSound();
+              }
+            }
+          };
+          bank.appendChild(button);
+        });
+        const resetButton = document.createElement("button");
+        resetButton.className = "ghost";
+        resetButton.textContent = "重排";
+        resetButton.onclick = reset;
+        options.appendChild(resetButton);
+        list.appendChild(row);
+      });
+    }
+    function renderCloze() {
+      const list = document.getElementById("clozeList");
+      list.innerHTML = "";
+      const box = document.createElement("div");
+      box.className = "cloze-box";
+      currentCourse.clozeParts.forEach((part, i) => {
+        box.append(document.createTextNode(part));
+        if (i < currentCourse.clozeAnswers.length) {
+          const blank = document.createElement("span");
+          blank.className = "blank";
+          blank.dataset.answer = currentCourse.clozeAnswers[i];
+          blank.textContent = `${i + 1}`;
+          box.appendChild(blank);
+        }
+      });
+      const bank = document.createElement("div");
+      bank.className = "word-bank";
+      currentCourse.clozeWords.forEach(word => {
+        const b = document.createElement("button");
+        b.textContent = word;
+        b.onclick = () => {
+          const next = [...box.querySelectorAll(".blank")].find(x => /^\d+$/.test(x.textContent));
+          if (!next) return;
+          const isRight = word === next.dataset.answer;
+          if (isRight) {
+            next.textContent = word;
+            next.classList.remove("bad");
+            next.classList.add("good");
+            [...bank.children].forEach(x => x.classList.remove("bad"));
+            b.classList.add("good");
+            markQuestion("c" + [...box.querySelectorAll(".blank")].indexOf(next), true);
+          } else {
+            next.classList.add("bad");
+            b.classList.add("bad");
+            funnyWrongSound();
+          }
+        };
+        bank.appendChild(b);
+      });
+      const controls = document.createElement("div");
+      controls.className = "bar";
+      const read = document.createElement("button");
+      read.className = "primary";
+      read.textContent = "朗读短文";
+      read.onclick = () => speak(currentCourse.clozeParts.join(" 空格 "));
+      controls.append(read);
+      list.append(controls, box, bank);
+    }
+
+    document.getElementById("backHome").onclick = () => {
+      document.getElementById("courseView").classList.remove("active");
+      document.getElementById("homeView").classList.add("active");
+      document.getElementById("pageSub").textContent = "每周课程复习";
+      renderGarage();
+    };
+    function setActivePanel(panelId) {
+      const courseView = document.getElementById("courseView");
+      courseView.querySelectorAll(".tab").forEach(t => {
+        t.classList.toggle("active", t.dataset.panel === panelId);
+      });
+      courseView.querySelectorAll(".panel").forEach(p => {
+        p.classList.toggle("active", p.id === panelId);
+      });
+    }
+    document.querySelectorAll("#courseView .tab").forEach(tab => {
+      tab.onclick = () => {
+        setActivePanel(tab.dataset.panel);
+      };
+    });
+    document.getElementById("voiceSelect").onchange = e => {
+      selectedVoiceName = e.target.value;
+      speak("这是智澹的中文朗读声音。");
+    };
+    document.getElementById("rateSlider").oninput = e => {
+      speechRate = Number(e.target.value);
+      document.getElementById("rateText").textContent = speechRate <= 0.45 ? "很慢" : speechRate <= 0.6 ? "慢" : "正常";
+    };
+    const parentDialog = document.getElementById("parentDialog");
+    document.getElementById("openParent").onclick = () => parentDialog.showModal();
+    document.getElementById("closeParent").onclick = () => parentDialog.close();
+    document.getElementById("testVoice").onclick = () => speak("智澹，准备好了吗？赛车马上出发！");
+    document.getElementById("lessonPhotos").onchange = e => {
+      const files = [...e.target.files];
+      const preview = document.getElementById("photoPreview");
+      preview.innerHTML = "";
+      files.forEach(file => {
+        const img = document.createElement("img");
+        img.alt = file.name;
+        img.src = URL.createObjectURL(file);
+        preview.appendChild(img);
+      });
+      document.getElementById("uploadStatus").textContent = files.length
+        ? `已选择 ${files.length} 张照片`
+        : "尚未选择照片";
+      document.getElementById("prepareLesson").disabled = !files.length;
+    };
+    document.getElementById("prepareLesson").onclick = () => {
+      document.getElementById("uploadStatus").textContent =
+        "照片已准备好。请在 Codex 对话中发送这些照片，我会生成并加入下一节课。";
+    };
+    renderVoices();
+    renderHome();
+  </script>
 </body>
 </html>
