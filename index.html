@@ -541,7 +541,7 @@
         </section>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-07-12-5</div>
+      <div class="version">v2026-07-13-1</div>
     </section>
   </main>
 
@@ -577,8 +577,8 @@
   <script>
     const courses = [{
       id: "lesson-10",
-      title: "第十课",
-      date: "本周练习",
+      title: "2026-07-15",
+      date: "第十课",
       summary: "学校听写 8 项、HCL 听写 16 项、HCL 作业练习",
       words: [
         ["收拾", "shou shi"], ["漂亮", "piao liang"], ["追上", "zhui shang"], ["觉得", "jue de"],
@@ -643,8 +643,8 @@
       ]
     }, {
       id: "lesson-11",
-      title: "下一周练习",
-      date: "2026-07 下一周",
+      title: "2026-07-22",
+      date: "下一周练习",
       summary: "HCL 听写 12 项、HCL 作业练习",
       dictationGroups: [{
         kind: "school",
@@ -753,6 +753,7 @@
     let right = 0;
     let answered = 0;
     let total = 0;
+    let courseFinished = false;
     let selectedVoiceName = "";
     let speechRate = 0.5;
 
@@ -1125,17 +1126,24 @@
     function updateScore() {
       document.getElementById("doneCount").textContent = done.size;
       document.getElementById("scoreText").textContent = total ? Math.round((right / total) * 100) : 0;
-      if (done.size >= total) finishCourse();
+      if (total > 0 && done.size >= total && !courseFinished) finishCourse();
     }
     function finishCourse() {
+      courseFinished = true;
       const percent = Math.round((right / total) * 100);
       const garage = JSON.parse(localStorage.getItem("jidamGarage") || "[]");
-      if (!garage.some(x => x.courseId === currentCourse.id)) {
-        garage.push({ courseId: currentCourse.id, car: carModels[garage.length % carModels.length], score: percent });
-        localStorage.setItem("jidamGarage", JSON.stringify(garage));
-      }
+      const reward = {
+        id: `${currentCourse.id}-${Date.now()}`,
+        courseId: currentCourse.id,
+        courseTitle: currentCourse.title,
+        car: carModels[garage.length % carModels.length],
+        score: percent,
+        completedAt: new Date().toISOString()
+      };
+      garage.push(reward);
+      localStorage.setItem("jidamGarage", JSON.stringify(garage));
       document.getElementById("resultBox").style.display = "block";
-      document.getElementById("resultBox").innerHTML = `<h2>${percent} 分</h2><p>完成 ${currentCourse.title}，获得新车模型：${garage.find(x => x.courseId === currentCourse.id).car}</p>`;
+      document.getElementById("resultBox").innerHTML = `<h2>${percent} 分</h2><p>完成 ${currentCourse.title}，获得新车模型：${reward.car}</p>`;
       renderGarage();
     }
 
@@ -1155,7 +1163,7 @@
     function renderGarage() {
       const garage = JSON.parse(localStorage.getItem("jidamGarage") || "[]");
       const row = document.getElementById("garageCars");
-      row.innerHTML = garage.length ? "" : "<span class='note'>完成一课后会获得一个车模型。</span>";
+      row.innerHTML = garage.length ? "" : "<span class='note'>每完成一次作业都会获得一个车模型。</span>";
       garage.forEach(item => {
         const car = document.createElement("span");
         car.className = "car";
@@ -1202,6 +1210,7 @@
       done = new Set();
       right = 0;
       answered = 0;
+      courseFinished = false;
       total = currentCourse.mcq.length + currentCourse.match.length + currentCourse.order.length;
       document.getElementById("totalCount").textContent = total;
       document.getElementById("pageSub").textContent = currentCourse.title;
@@ -1222,6 +1231,7 @@
       done = new Set();
       right = 0;
       answered = 0;
+      courseFinished = false;
       showCopies = true;
       total = currentCourse.mcq.length + currentCourse.match.length + (currentCourse.clozeAnswers || []).length + (currentCourse.order || []).length;
       document.getElementById("totalCount").textContent = total;
@@ -1274,7 +1284,8 @@
         const section = document.createElement("section");
         section.className = "dictation-group";
         const normalizedItems = group.items.map(item => Array.isArray(item) ? { text: item[0], pinyin: item[1] || "" } : item);
-        section.innerHTML = `<div class="dictation-head"><h3>${group.title}</h3><div class="bar"><button class="ghost hide-all">全部隐藏</button><button class="ghost partial-hide">部分隐藏</button><button class="ghost show-all">全部显示</button><button class="primary read-all">🔊 朗读全部</button></div></div><div class="dictation-list"></div>`;
+        const heading = visibleGroups.length > 1 ? `<h3>${group.title}</h3>` : "";
+        section.innerHTML = `<div class="dictation-head">${heading}<div class="bar"><button class="ghost hide-all">全部隐藏</button><button class="ghost partial-hide">部分隐藏</button><button class="ghost show-all">全部显示</button><button class="primary read-all">🔊 朗读全部</button></div></div><div class="dictation-list"></div>`;
         section.querySelector(".read-all").onclick = () => speak(normalizedItems.map(x => x.text).join("。"));
         section.querySelector(".hide-all").onclick = () => {
           section.querySelectorAll(".dictation-item").forEach(row => setDictationRowMode(row, "hidden"));
