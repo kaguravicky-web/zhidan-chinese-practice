@@ -190,11 +190,14 @@
       margin-bottom: 14px;
       flex-wrap: wrap;
     }
-    .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; }
+    .tabs, .subtabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; }
     .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .subtab.active { background: #dbeafe; color: var(--blue-dark); border-color: #93c5fd; }
     .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 10px 0 14px; }
     .note { color: var(--muted); font-weight: 700; }
     .practice-list { display: grid; gap: 14px; }
+    .practice-section { display: none; }
+    .practice-section.active { display: block; }
     .practice-card { padding: 14px; }
     .dictation-group { margin-bottom: 18px; }
     .dictation-head {
@@ -208,7 +211,7 @@
     .dictation-list { display: grid; gap: 8px; }
     .dictation-item {
       display: grid;
-      grid-template-columns: 42px minmax(0, 1fr) 52px;
+      grid-template-columns: 42px minmax(0, 1fr) auto 52px;
       gap: 10px;
       align-items: center;
       min-height: 66px;
@@ -219,13 +222,18 @@
     }
     .dictation-number { color: var(--blue); font-size: 20px; font-weight: 900; }
     .dictation-text { font-size: 22px; font-weight: 800; line-height: 1.45; }
-    .hidden-answers .dictation-text,
-    .hidden-answers .pinyin { display: none; }
-    .hidden-answers .dictation-content::before {
+    .dictation-hint { display: none; font-size: 22px; font-weight: 900; color: var(--blue-dark); letter-spacing: 2px; }
+    .dictation-item.is-hidden .dictation-text,
+    .dictation-item.is-hidden .pinyin { display: none; }
+    .dictation-item.is-partial .dictation-text,
+    .dictation-item.is-partial .pinyin { display: none; }
+    .dictation-item.is-partial .dictation-hint { display: block; }
+    .dictation-item.is-hidden .dictation-content::before {
       content: "文字已隐藏，听声音默写";
       color: var(--muted);
       font-weight: 800;
     }
+    .peek-one { white-space: nowrap; }
     .card-head {
       display: grid;
       grid-template-columns: auto 1fr auto auto;
@@ -288,6 +296,55 @@
       background: #fff;
     }
     .qtext { font-size: 20px; line-height: 1.55; }
+    .vocab-help {
+      min-height: 0;
+      padding: 0 2px;
+      border: 0;
+      border-bottom: 2px dotted var(--blue);
+      border-radius: 0;
+      background: #eff7ff;
+      color: var(--blue-dark);
+      font: inherit;
+      font-weight: 900;
+      cursor: help;
+    }
+    .vocab-help:hover { background: #dbeafe; }
+    .vocab-popover {
+      position: fixed;
+      z-index: 20;
+      left: min(24px, 5vw);
+      right: min(24px, 5vw);
+      bottom: 18px;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 14px;
+      border: 1px solid #93c5fd;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 18px 45px rgba(15, 58, 104, .18);
+      color: var(--ink);
+    }
+    .vocab-popover[hidden] { display: none; }
+    .vocab-popover h3 { margin: 0 0 4px; color: var(--blue-dark); font-size: 24px; }
+    .vocab-popover p { margin: 5px 0; line-height: 1.55; }
+    .vocab-popover .bar { margin-bottom: 0; }
+    .vocab-strip {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      color: var(--muted);
+      font-weight: 800;
+      padding: 2px 0 4px;
+    }
+    .vocab-chip {
+      min-height: 30px;
+      padding: 3px 8px;
+      border: 1px solid #93c5fd;
+      background: #eff7ff;
+      color: var(--blue-dark);
+    }
     .options {
       grid-column: 1 / -1;
       display: grid;
@@ -445,34 +502,46 @@
         <span class="note">先朗读听写清单，再完成课堂练习。</span>
       </div>
       <nav class="tabs">
-        <button class="tab active" data-panel="writingPanel">听写默写</button>
-        <button class="tab" data-panel="mcqPanel">选择题</button>
-        <button class="tab" data-panel="matchPanel">词语搭配</button>
-        <button class="tab" data-panel="orderPanel">排序组句</button>
-        <button class="tab" data-panel="clozePanel">短文填空</button>
+        <button class="tab active" data-panel="schoolWritingPanel">学校听写</button>
+        <button class="tab" data-panel="hclWritingPanel">HCL 听写</button>
+        <button class="tab" data-panel="hclPracticePanel">HCL 作业练习</button>
       </nav>
-      <section class="panel active" id="writingPanel">
-        <h2>本周听写</h2>
-        <div class="practice-list" id="writingList"></div>
+      <section class="panel active" id="schoolWritingPanel">
+        <h2>学校听写</h2>
+        <p class="note">学校部分只有听写，用声音练默写。</p>
+        <div class="practice-list" id="schoolWritingList"></div>
       </section>
-      <section class="panel" id="mcqPanel">
-        <h2>选择题</h2>
-        <div id="mcqList"></div>
+      <section class="panel" id="hclWritingPanel">
+        <h2>HCL 听写</h2>
+        <div class="practice-list" id="hclWritingList"></div>
       </section>
-      <section class="panel" id="matchPanel">
-        <h2>词语搭配</h2>
-        <div id="matchList"></div>
-      </section>
-      <section class="panel" id="orderPanel">
-        <h2>排序组句</h2>
-        <div id="orderList"></div>
-      </section>
-      <section class="panel" id="clozePanel">
-        <h2>短文填空</h2>
-        <div id="clozeList"></div>
+      <section class="panel" id="hclPracticePanel">
+        <h2>HCL 作业练习</h2>
+        <nav class="subtabs">
+          <button class="subtab active" data-section="mcqSection">选择题</button>
+          <button class="subtab" data-section="matchSection">词语搭配</button>
+          <button class="subtab" data-section="orderSection">排序组句</button>
+          <button class="subtab" data-section="clozeSection">短文填空</button>
+        </nav>
+        <section class="practice-section active" id="mcqSection">
+          <h3>选择题</h3>
+          <div id="mcqList"></div>
+        </section>
+        <section class="practice-section" id="matchSection">
+          <h3>词语搭配</h3>
+          <div id="matchList"></div>
+        </section>
+        <section class="practice-section" id="orderSection">
+          <h3>排序组句</h3>
+          <div id="orderList"></div>
+        </section>
+        <section class="practice-section" id="clozeSection">
+          <h3>短文填空</h3>
+          <div id="clozeList"></div>
+        </section>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-07-12-3</div>
+      <div class="version">v2026-07-12-5</div>
     </section>
   </main>
 
@@ -510,7 +579,7 @@
       id: "lesson-10",
       title: "第十课",
       date: "本周练习",
-      summary: "学校听写 8 项、补习班听写 16 项、选择题、词语搭配、短文填空",
+      summary: "学校听写 8 项、HCL 听写 16 项、HCL 作业练习",
       words: [
         ["收拾", "shou shi"], ["漂亮", "piao liang"], ["追上", "zhui shang"], ["觉得", "jue de"],
         ["决定", "jue ding"], ["保持", "bao chi"], ["伸出手", "shen chu shou"], ["浪费", "lang fei"],
@@ -576,12 +645,14 @@
       id: "lesson-11",
       title: "下一周练习",
       date: "2026-07 下一周",
-      summary: "补习班听写 12 项、选择题、词语搭配、排序成段、组词成句",
+      summary: "HCL 听写 12 项、HCL 作业练习",
       dictationGroups: [{
-        title: "学校听写：本周照片未提供",
+        kind: "school",
+        title: "学校听写",
         items: []
       }, {
-        title: "补习班听写：本周作业",
+        kind: "hcl",
+        title: "HCL 听写",
         items: [
           ["亮晶晶", "liàng jīng jīng"], ["世界", "shì jiè"], ["文件夹", "wén jiàn jiā"], ["国庆", "guó qìng"],
           ["指着", "zhǐ zhe"], ["唱国歌", "chàng guó gē"], ["兴奋", "xīng fèn"], ["新加坡", "xīn jiā pō"],
@@ -685,6 +756,86 @@
     let selectedVoiceName = "";
     let speechRate = 0.5;
 
+    const VOCAB_HELP = {
+      "升旗手": ["shēng qí shǒu", "负责把国旗升起来的人。", "flag raiser"],
+      "国旗": ["guó qí", "一个国家的旗子。", "national flag"],
+      "空中": ["kōng zhōng", "天空里面。", "in the air"],
+      "兴奋": ["xīng fèn", "很开心，很激动。", "excited"],
+      "领奖": ["lǐng jiǎng", "上台拿奖品或奖状。", "receive a prize"],
+      "贫苦": ["pín kǔ", "生活很穷，很辛苦。", "poor and hard"],
+      "饿肚子": ["è dù zi", "没有东西吃，肚子很饿。", "be hungry"],
+      "门牙": ["mén yá", "嘴巴前面的牙齿。", "front tooth"],
+      "设计": ["shè jì", "想好样子再做出来。", "design"],
+      "贺卡": ["hè kǎ", "送祝福的小卡片。", "greeting card"],
+      "东海岸": ["dōng hǎi àn", "新加坡一个靠海的地方。", "East Coast"],
+      "特别": ["tè bié", "不一样，很有特点。", "special"],
+      "精美": ["jīng měi", "做得很好看。", "delicate and beautiful"],
+      "猜想": ["cāi xiǎng", "根据情况想可能是什么。", "guess; suppose"],
+      "亮晶晶": ["liàng jīng jīng", "闪闪发亮的样子。", "sparkling"],
+      "贴在": ["tiē zài", "用胶水或胶带粘上去。", "stick on"],
+      "墙上": ["qiáng shàng", "墙的表面。", "on the wall"],
+      "各样": ["gè yàng", "很多不同的样子。", "all kinds"],
+      "弯弯": ["wān wān", "不是直的，弯曲的样子。", "curved"],
+      "练习": ["liàn xí", "反复做，让自己更会。", "practice"],
+      "谜语": ["mí yǔ", "让别人猜答案的话。", "riddle"],
+      "幸福": ["xìng fú", "开心、满足、生活很好。", "happy; blessed"],
+      "国歌": ["guó gē", "代表一个国家的歌曲。", "national anthem"],
+      "野餐": ["yě cān", "在户外吃东西。", "picnic"],
+      "播放": ["bō fàng", "让声音或影片放出来。", "play; broadcast"],
+      "世界": ["shì jiè", "地球上所有地方和人。", "world"],
+      "文件夹": ["wén jiàn jiā", "放文件的夹子，也可以指电脑里的资料夹。", "folder"],
+      "国庆": ["guó qìng", "庆祝国家生日的日子。", "National Day"],
+      "礼物": ["lǐ wù", "送给别人的东西。", "gift"],
+      "竖起": ["shù qǐ", "向上立起来。", "put up; raise"],
+      "大拇指": ["dà mǔ zhǐ", "手上最粗的那个手指。", "thumb"],
+      "环境": ["huán jìng", "我们周围的地方和情况。", "environment"],
+      "责任": ["zé rèn", "应该做好的事。", "responsibility"],
+      "决定": ["jué dìng", "想好了要这样做。", "decide"],
+      "保持": ["bǎo chí", "让情况一直不变。", "keep; maintain"],
+      "浪费": ["làng fèi", "没有好好使用，把东西白白用掉。", "waste"],
+      "废物": ["fèi wù", "不要了、没用的东西。", "waste; rubbish"],
+      "塑料袋": ["sù liào dài", "用塑料做的袋子。", "plastic bag"],
+      "乱扔垃圾": ["luàn rēng lā jī", "随便把垃圾丢在地上。", "litter"],
+      "保护": ["bǎo hù", "照顾好，不让它受伤害。", "protect"],
+      "弄脏": ["nòng zāng", "把东西变得不干净。", "make dirty"],
+      "机会": ["jī huì", "可以做某件事的好时机。", "chance"],
+      "检查": ["jiǎn chá", "仔细看有没有错。", "check"],
+      "消息": ["xiāo xi", "别人告诉你的事情或新闻。", "news; message"],
+      "清洁": ["qīng jié", "干净。", "clean"],
+      "代表": ["dài biǎo", "替别人或团体去做事。", "represent"],
+      "全国": ["quán guó", "整个国家。", "the whole country"],
+      "比赛": ["bǐ sài", "大家一起比谁做得更好。", "competition"],
+      "游泳池": ["yóu yǒng chí", "让人游泳的水池。", "swimming pool"],
+      "热身运动": ["rè shēn yùn dòng", "正式运动前先做的小运动。", "warm-up exercise"],
+      "阻止": ["zǔ zhǐ", "不让某件事发生。", "stop; prevent"],
+      "立刻": ["lì kè", "马上。", "right away"],
+      "傍晚": ["bàng wǎn", "快到晚上的时候。", "evening"],
+      "依依不舍": ["yī yī bù shě", "很舍不得离开。", "reluctant to leave"],
+      "动物园": ["dòng wù yuán", "可以看很多动物的地方。", "zoo"],
+      "狮子": ["shī zi", "一种很大的野兽。", "lion"],
+      "凶猛": ["xiōng měng", "很凶、很有攻击性。", "fierce"],
+      "邮票": ["yóu piào", "贴在信封上寄信的小票。", "stamp"],
+      "信封": ["xìn fēng", "装信的纸袋。", "envelope"],
+      "第一名": ["dì yī míng", "比赛或考试排在最前面。", "first place"],
+      "考试": ["kǎo shì", "用题目检查学习情况。", "test; exam"],
+      "顽皮": ["wán pí", "爱玩闹，不太听话。", "naughty"],
+      "树枝": ["shù zhī", "树上细长的枝条。", "branch"],
+      "忽然": ["hū rán", "事情很快发生，之前没想到。", "suddenly"],
+      "受伤": ["shòu shāng", "身体被弄伤。", "be injured"],
+      "痛苦": ["tòng kǔ", "身体或心里很难受。", "painful"],
+      "可怜": ["kě lián", "让人同情。", "pitiful"],
+      "竟然": ["jìng rán", "没想到会这样。", "unexpectedly"],
+      "同情心": ["tóng qíng xīn", "看到别人难过时想帮忙的心。", "sympathy"],
+      "捧起": ["pěng qǐ", "用双手轻轻托起来。", "hold up with both hands"],
+      "包扎": ["bāo zā", "用布或纱布包住伤口。", "bandage"],
+      "伤口": ["shāng kǒu", "受伤的地方。", "wound"],
+      "打算": ["dǎ suàn", "计划要做。", "plan to"],
+      "收养": ["shōu yǎng", "把动物或孩子带回家照顾。", "adopt"],
+      "窗外": ["chuāng wài", "窗子的外面。", "outside the window"],
+      "拍下": ["pāi xià", "用相机或手机拍照片。", "take a photo"],
+      "森林": ["sēn lín", "很多树长在一起的地方。", "forest"]
+    };
+
     const audioCtx = () => new (window.AudioContext || window.webkitAudioContext)();
     function tone(freq, duration, type = "sine", gainValue = 0.08, delay = 0) {
       const ctx = window._ctx || (window._ctx = audioCtx());
@@ -724,6 +875,79 @@
     }
     function escapeHTML(value) {
       return String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+    function escapeRegex(value) {
+      return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+    function annotateText(value) {
+      const text = String(value);
+      const words = Object.keys(VOCAB_HELP).sort((a, b) => b.length - a.length);
+      if (!words.length) return escapeHTML(text);
+      const pattern = new RegExp(words.map(escapeRegex).join("|"), "g");
+      let html = "";
+      let last = 0;
+      text.replace(pattern, (word, offset) => {
+        html += escapeHTML(text.slice(last, offset));
+        html += `<button type="button" class="vocab-help" data-word="${escapeHTML(word)}">${escapeHTML(word)}</button>`;
+        last = offset + word.length;
+        return word;
+      });
+      html += escapeHTML(text.slice(last));
+      return html;
+    }
+    function vocabWordsInTexts(texts) {
+      const source = texts.filter(Boolean).join(" ");
+      return Object.keys(VOCAB_HELP)
+        .filter(word => source.includes(word))
+        .sort((a, b) => b.length - a.length || a.localeCompare(b, "zh-Hans"));
+    }
+    function addVocabStrip(row, texts) {
+      const words = vocabWordsInTexts(texts);
+      if (!words.length) return;
+      const strip = createVocabStrip(words);
+      const qtext = row.querySelector(".qtext");
+      qtext.insertAdjacentElement("afterend", strip);
+    }
+    function createVocabStrip(words) {
+      const strip = document.createElement("div");
+      strip.className = "vocab-strip";
+      strip.append("词语帮助：");
+      words.forEach(word => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "vocab-chip vocab-help";
+        chip.dataset.word = word;
+        chip.textContent = word;
+        strip.appendChild(chip);
+      });
+      return strip;
+    }
+    function showVocabHelp(word) {
+      const entry = VOCAB_HELP[word];
+      if (!entry) return;
+      let popover = document.getElementById("vocabPopover");
+      if (!popover) {
+        popover = document.createElement("div");
+        popover.id = "vocabPopover";
+        popover.className = "vocab-popover";
+        popover.hidden = true;
+        document.body.appendChild(popover);
+      }
+      popover.innerHTML = `
+        <h3>${escapeHTML(word)}</h3>
+        <p><b>拼音：</b>${escapeHTML(entry[0])}</p>
+        <p><b>中文：</b>${escapeHTML(entry[1])}</p>
+        <p><b>English：</b>${escapeHTML(entry[2])}</p>
+        <div class="bar">
+          <button class="primary vocab-read-zh">🔊 中文</button>
+          <button class="ghost vocab-read-en">🔊 English</button>
+          <button class="ghost vocab-close">关掉</button>
+        </div>
+      `;
+      popover.hidden = false;
+      popover.querySelector(".vocab-read-zh").onclick = () => speak(`${word}。${entry[1]}`, "zh-CN");
+      popover.querySelector(".vocab-read-en").onclick = () => speak(entry[2], "en-US");
+      popover.querySelector(".vocab-close").onclick = () => { popover.hidden = true; };
     }
     function getWrongBook() {
       return JSON.parse(localStorage.getItem(WRONG_KEY) || "[]");
@@ -984,7 +1208,8 @@
       document.getElementById("resultBox").style.display = "none";
       document.getElementById("homeView").classList.remove("active");
       document.getElementById("courseView").classList.add("active");
-      setActivePanel(currentCourse.mcq.length ? "mcqPanel" : currentCourse.match.length ? "matchPanel" : "orderPanel");
+      setActivePanel("hclPracticePanel");
+      setActivePractice(currentCourse.mcq.length ? "mcqSection" : currentCourse.match.length ? "matchSection" : "orderSection");
       renderWriting();
       renderQuestions("mcqList", currentCourse.mcq, "m", "复习错题。选择正确的字。");
       renderQuestions("matchList", currentCourse.match, "t", "复习错题。选择可以搭配的词。");
@@ -1004,7 +1229,8 @@
       document.getElementById("resultBox").style.display = "none";
       document.getElementById("homeView").classList.remove("active");
       document.getElementById("courseView").classList.add("active");
-      setActivePanel("writingPanel");
+      setActivePanel("schoolWritingPanel");
+      setActivePractice("mcqSection");
       renderWriting();
       renderQuestions("mcqList", currentCourse.mcq, "m", "选择正确的字。");
       renderQuestions("matchList", currentCourse.match, "t", "选择可以搭配的词。");
@@ -1013,39 +1239,82 @@
       updateScore();
     }
     function renderWriting() {
-      const list = document.getElementById("writingList");
-      list.innerHTML = "";
+      const groups = getDictationGroups();
+      renderDictationGroupList("schoolWritingList", groups.filter(group => group.kind === "school"), "本周没有学校听写照片。");
+      renderDictationGroupList("hclWritingList", groups.filter(group => group.kind === "hcl"), "本周没有 HCL 听写。");
+    }
+    function getDictationGroups() {
       const groups = currentCourse.dictationGroups || [
         {
-          title: `学校听写：${currentCourse.title}`,
+          kind: "school",
+          title: "学校听写",
           items: currentCourse.sentences.map(text => ({ text, pinyin: "" }))
         },
         {
-          title: "补习班听写：本周作业",
+          kind: "hcl",
+          title: "HCL 听写",
           items: currentCourse.words.map(([text, pinyin]) => ({ text, pinyin }))
         }
       ];
-      groups.forEach(group => {
-        if (!group.items.length) return;
+      return groups.map(group => ({
+        ...group,
+        kind: group.kind || (group.title.includes("学校") ? "school" : "hcl"),
+        title: group.kind === "school" || group.title.includes("学校") ? "学校听写" : "HCL 听写"
+      }));
+    }
+    function renderDictationGroupList(targetId, groups, emptyText) {
+      const list = document.getElementById(targetId);
+      list.innerHTML = "";
+      const visibleGroups = groups.filter(group => group.items.length);
+      if (!visibleGroups.length) {
+        list.innerHTML = `<div class="practice-card note">${emptyText}</div>`;
+        return;
+      }
+      visibleGroups.forEach(group => {
         const section = document.createElement("section");
         section.className = "dictation-group";
         const normalizedItems = group.items.map(item => Array.isArray(item) ? { text: item[0], pinyin: item[1] || "" } : item);
-        section.innerHTML = `<div class="dictation-head"><h3>${group.title}</h3><button class="ghost hide-dictation">隐藏文字</button><button class="primary read-all">🔊 朗读全部</button></div><div class="dictation-list"></div>`;
+        section.innerHTML = `<div class="dictation-head"><h3>${group.title}</h3><div class="bar"><button class="ghost hide-all">全部隐藏</button><button class="ghost partial-hide">部分隐藏</button><button class="ghost show-all">全部显示</button><button class="primary read-all">🔊 朗读全部</button></div></div><div class="dictation-list"></div>`;
         section.querySelector(".read-all").onclick = () => speak(normalizedItems.map(x => x.text).join("。"));
-        section.querySelector(".hide-dictation").onclick = event => {
-          const hidden = section.classList.toggle("hidden-answers");
-          event.currentTarget.textContent = hidden ? "显示文字" : "隐藏文字";
+        section.querySelector(".hide-all").onclick = () => {
+          section.querySelectorAll(".dictation-item").forEach(row => setDictationRowMode(row, "hidden"));
+        };
+        section.querySelector(".partial-hide").onclick = () => {
+          section.querySelectorAll(".dictation-item").forEach(row => setDictationRowMode(row, "partial"));
+        };
+        section.querySelector(".show-all").onclick = () => {
+          section.querySelectorAll(".dictation-item").forEach(row => setDictationRowMode(row, "visible"));
         };
         const itemList = section.querySelector(".dictation-list");
         normalizedItems.forEach((item, i) => {
           const row = document.createElement("div");
           row.className = "dictation-item";
-          row.innerHTML = `<span class="dictation-number">${i + 1}</span><div class="dictation-content"><div class="dictation-text">${item.text}</div><div class="pinyin">${item.pinyin}</div></div><button class="speak" title="朗读">🔊</button>`;
+          row.innerHTML = `<span class="dictation-number">${i + 1}</span><div class="dictation-content"><div class="dictation-text">${item.text}</div><div class="dictation-hint">${makeDictationHint(item.text)}</div><div class="pinyin">${item.pinyin}</div></div><button class="ghost peek-one">看一下</button><button class="speak" title="朗读">🔊</button>`;
+          row.querySelector(".peek-one").onclick = event => {
+            const isCovered = row.classList.contains("is-hidden") || row.classList.contains("is-partial");
+            setDictationRowMode(row, isCovered ? "visible" : "hidden");
+          };
           row.querySelector(".speak").onclick = () => speak(item.text);
           itemList.appendChild(row);
         });
         list.appendChild(section);
       });
+    }
+    function setDictationRowMode(row, mode) {
+      row.classList.toggle("is-hidden", mode === "hidden");
+      row.classList.toggle("is-partial", mode === "partial");
+      row.querySelector(".peek-one").textContent = mode === "visible" ? "藏起来" : "看一下";
+    }
+    function makeDictationHint(text) {
+      return text.split(/([，。！？；：,.!?;:])/).map(part => {
+        if (/^[，。！？；：,.!?;:]$/.test(part)) return part;
+        const chars = Array.from(part);
+        const chineseIndexes = chars.map((char, index) => /[\u3400-\u9fff]/.test(char) ? index : -1).filter(index => index >= 0);
+        if (!chineseIndexes.length) return chars.map(char => char.trim() ? "□" : char).join("");
+        const visible = new Set([chineseIndexes[0]]);
+        if (chineseIndexes.length >= 4) visible.add(chineseIndexes[chineseIndexes.length - 1]);
+        return chars.map((char, index) => /[\u3400-\u9fff]/.test(char) && !visible.has(index) ? "□" : char).join("");
+      }).join("");
     }
     function renderQuestions(target, data, prefix, speechPrefix) {
       const list = document.getElementById(target);
@@ -1053,7 +1322,8 @@
       data.forEach(([q, opts, ans, meta], i) => {
         const row = document.createElement("div");
         row.className = "question";
-        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${q}</div><div class="options"></div><div class="bar"><button class="primary submit-answer" disabled>确认本题</button><span class="note">先选择，可以修改；确认后才看对错。</span></div><div class="answer-line"></div><div class="tutor-box"></div>`;
+        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${annotateText(q)}</div><div class="options"></div><div class="bar"><button class="primary submit-answer" disabled>确认本题</button><span class="note">先选择，可以修改；确认后才看对错。</span></div><div class="answer-line"></div><div class="tutor-box"></div>`;
+        addVocabStrip(row, [q, ...opts]);
         row.querySelector(".speak").onclick = () => speak(`${speechPrefix}${q.replace("____", "空格")}`);
         const options = row.querySelector(".options");
         const answerLine = row.querySelector(".answer-line");
@@ -1118,7 +1388,8 @@
       (currentCourse.order || []).forEach((item, i) => {
         const row = document.createElement("div");
         row.className = "question";
-        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${item.prompt}</div><div class="answer-line"></div><div class="tutor-box"></div><div class="options"></div><div class="word-bank"></div>`;
+        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${annotateText(item.prompt)}</div><div class="answer-line"></div><div class="tutor-box"></div><div class="options"></div><div class="word-bank"></div>`;
+        addVocabStrip(row, [item.prompt, item.fixed, ...(item.lines || []).map(line => line.text), ...(item.parts || [])]);
         if (item.type === "sequence") {
           renderSequenceOrder(row, item, i);
           list.appendChild(row);
@@ -1263,7 +1534,7 @@
       bank.className = "sequence-card";
       const fixedRow = document.createElement("div");
       fixedRow.className = "sequence-row fixed";
-      fixedRow.innerHTML = `<div>（1）</div><div>${item.fixed}</div>`;
+      fixedRow.innerHTML = `<div>（1）</div><div>${annotateText(item.fixed)}</div>`;
       bank.appendChild(fixedRow);
       function checkSequence() {
         if (done.has("o" + index)) return;
@@ -1327,7 +1598,7 @@
           answerLine.textContent = "";
         };
         const text = document.createElement("div");
-        text.textContent = line.text;
+        text.innerHTML = annotateText(line.text);
         lineRow.append(input, text);
         bank.appendChild(lineRow);
       });
@@ -1367,7 +1638,9 @@
       const box = document.createElement("div");
       box.className = "cloze-box";
       currentCourse.clozeParts.forEach((part, i) => {
-        box.append(document.createTextNode(part));
+        const textPart = document.createElement("span");
+        textPart.innerHTML = annotateText(part);
+        box.append(textPart);
         if (i < currentCourse.clozeAnswers.length) {
           const blank = document.createElement("span");
           blank.className = "blank";
@@ -1407,7 +1680,11 @@
       read.textContent = "朗读短文";
       read.onclick = () => speak(currentCourse.clozeParts.join(" 空格 "));
       controls.append(read);
-      list.append(controls, box, bank);
+      const helpWords = vocabWordsInTexts([...(currentCourse.clozeParts || []), ...(currentCourse.clozeWords || [])]);
+      const helpStrip = helpWords.length ? createVocabStrip(helpWords) : null;
+      list.append(controls);
+      if (helpStrip) list.appendChild(helpStrip);
+      list.append(box, bank);
     }
 
     document.getElementById("backHome").onclick = () => {
@@ -1425,10 +1702,32 @@
         p.classList.toggle("active", p.id === panelId);
       });
     }
+    function setActivePractice(sectionId) {
+      const panel = document.getElementById("hclPracticePanel");
+      panel.querySelectorAll(".subtab").forEach(t => {
+        t.classList.toggle("active", t.dataset.section === sectionId);
+      });
+      panel.querySelectorAll(".practice-section").forEach(section => {
+        section.classList.toggle("active", section.id === sectionId);
+      });
+    }
     document.querySelectorAll("#courseView .tab").forEach(tab => {
       tab.onclick = () => {
         setActivePanel(tab.dataset.panel);
       };
+    });
+    document.querySelectorAll("#hclPracticePanel .subtab").forEach(tab => {
+      tab.onclick = () => {
+        setActivePractice(tab.dataset.section);
+      };
+    });
+    document.addEventListener("click", event => {
+      const vocabButton = event.target.closest(".vocab-help");
+      if (vocabButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        showVocabHelp(vocabButton.dataset.word);
+      }
     });
     document.getElementById("voiceSelect").onchange = e => {
       selectedVoiceName = e.target.value;
