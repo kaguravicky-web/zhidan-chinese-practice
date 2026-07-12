@@ -159,6 +159,16 @@
     .course-meta { color: var(--muted); line-height: 1.7; margin: 10px 0 16px; }
     .garage { margin-top: 16px; padding: 16px; }
     .garage h2::before { content: "🏁 "; }
+    .wrong-book { margin-top: 16px; padding: 16px; }
+    .wrong-book h2::before { content: "📒 "; }
+    .wrong-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
     .car-row { display: flex; gap: 10px; flex-wrap: wrap; min-height: 48px; align-items: center; }
     .car {
       display: inline-flex;
@@ -296,6 +306,33 @@
       padding: 8px 10px;
     }
     .answer-line:empty { display: none; }
+    .tutor-box {
+      grid-column: 1 / -1;
+      border: 1px solid #c9ddf3;
+      border-radius: 8px;
+      background: #f4f9ff;
+      padding: 10px 12px;
+      color: var(--blue-dark);
+      line-height: 1.55;
+    }
+    .tutor-box:empty { display: none; }
+    .tutor-title { font-weight: 900; margin-bottom: 4px; }
+    .tutor-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 8px; }
+    .tutor-actions button { min-height: 34px; padding: 5px 10px; }
+    .picked-line {
+      grid-column: 1 / -1;
+      min-height: 48px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      border: 1px dashed #bfd0e2;
+      border-radius: 8px;
+      background: #f7fbff;
+    }
+    .picked-line button { background: #eef7ff; }
+    .order-actions { grid-column: 1 / -1; }
     .sequence-card {
       grid-column: 1 / -1;
       display: grid;
@@ -396,6 +433,10 @@
         <h2>智澹的车库</h2>
         <div class="car-row" id="garageCars"></div>
       </div>
+      <div class="garage wrong-book">
+        <h2>错题本</h2>
+        <div id="wrongBook"></div>
+      </div>
     </section>
 
     <section class="view" id="courseView">
@@ -431,7 +472,7 @@
         <div id="clozeList"></div>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-07-12-1</div>
+      <div class="version">v2026-07-12-3</div>
     </section>
   </main>
 
@@ -634,6 +675,7 @@
     }];
 
     const carModels = ["Cyber SUV", "蓝焰跑车", "星际赛车", "闪电越野车", "银翼概念车", "霓虹方程式", "磁悬浮小车"];
+    const WRONG_KEY = "zhidanWrongBook";
     let currentCourse = null;
     let showCopies = true;
     let done = new Set();
@@ -666,18 +708,102 @@
       tone(260, .12, "sawtooth", .045, 0);
       tone(150, .18, "sawtooth", .04, .12);
     }
-    function speak(text) {
+    function speak(text, lang = "zh-CN") {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = "zh-CN";
+      u.lang = lang;
       u.rate = speechRate;
-      u.pitch = 0.78;
+      u.pitch = lang.startsWith("en") ? 0.95 : 0.78;
       const voices = window.speechSynthesis.getVoices();
-      const selected = voices.find(v => v.name === selectedVoiceName);
+      const selected = lang.startsWith("zh") ? voices.find(v => v.name === selectedVoiceName) : null;
+      const en = voices.find(v => /en/i.test(v.lang));
       const male = voices.find(v => /zh/i.test(v.lang) && /Yunxi|Yunjian|Kangkang|Male|男|云希|云健/i.test(v.name));
       const zh = voices.find(v => /zh/i.test(v.lang));
-      u.voice = selected || male || zh || null;
+      u.voice = selected || (lang.startsWith("en") ? en : male || zh) || null;
       window.speechSynthesis.speak(u);
+    }
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+    function getWrongBook() {
+      return JSON.parse(localStorage.getItem(WRONG_KEY) || "[]");
+    }
+    function saveWrongBook(items) {
+      localStorage.setItem(WRONG_KEY, JSON.stringify(items));
+    }
+    function questionAnswerText(q, answer) {
+      return q.includes("____") ? q.replace("____", answer) : answer;
+    }
+    function makeQuestionKey(type, q, answer) {
+      return `${currentCourse?.id || "course"}|${type}|${q}|${answer}`;
+    }
+    function recordWrong(item) {
+      const items = getWrongBook();
+      const next = { ...item, courseId: currentCourse?.id || "", courseTitle: currentCourse?.title || "", lastWrongAt: new Date().toISOString() };
+      const index = items.findIndex(x => x.key === next.key);
+      if (index >= 0) items[index] = { ...items[index], ...next, misses: (items[index].misses || 1) + 1 };
+      else items.push({ ...next, misses: 1 });
+      saveWrongBook(items.slice(-60));
+      renderWrongBook();
+    }
+    function removeWrong(key) {
+      saveWrongBook(getWrongBook().filter(item => item.key !== key));
+      renderWrongBook();
+    }
+    function tutorForQuestion(type, q, opts, ans, selected) {
+      const correct = opts[ans];
+      const chosen = selected >= 0 ? opts[selected] : "";
+      const answerText = questionAnswerText(q, correct);
+      if (type === "m" && q.includes("读音")) {
+        return {
+          en: `Read slowly. The answer is "${correct}". Watch the tone marks.`,
+          zh: `慢慢读。答案是“${correct}”。注意声调。`
+        };
+      }
+      if (type === "t") {
+        return {
+          en: `Say the whole phrase: "${answerText}". This is a common match.`,
+          zh: `读完整词语：“${answerText}”。这是常用搭配。`
+        };
+      }
+      if (q.includes("____")) {
+        return {
+          en: `Put the word in the blank and read it. "${answerText}" sounds right.`,
+          zh: `把词放进空格再读。“${answerText}”读起来通顺。`
+        };
+      }
+      return {
+        en: `Look at the meaning. Choose "${correct}".`,
+        zh: `看句子的意思。这里选“${correct}”。`
+      };
+    }
+    function setTutor(box, tutor) {
+      box.innerHTML = `
+        <div class="tutor-title">AI小教练</div>
+        <div class="tutor-actions">
+          <button class="ghost read-en">🔊 English</button>
+          <button class="ghost read-zh">🔊 中文</button>
+        </div>
+        <div><b>English:</b> ${escapeHTML(tutor.en)}</div>
+        <div><b>中文:</b> ${escapeHTML(tutor.zh)}</div>
+      `;
+      box.querySelector(".read-en").onclick = () => speak(tutor.en, "en-US");
+      box.querySelector(".read-zh").onclick = () => speak(tutor.zh, "zh-CN");
+    }
+    function tutorForSequence(item, values) {
+      const correctRows = item.lines.map((line, i) => values[i] === line.answer);
+      const firstWrong = correctRows.findIndex(ok => !ok);
+      const hint = firstWrong >= 0 ? item.lines[firstWrong].text : "再检查故事的发展顺序。";
+      return {
+        en: "Think about time. What happens first? What happens next? Keep the green lines.",
+        zh: `想时间顺序：先发生什么？接着发生什么？绿色的句子已经对了。看看这句：“${hint}”`
+      };
+    }
+    function tutorForWordOrder(item) {
+      return {
+        en: "Find who first. Then find the action. Click a chosen word to move it back.",
+        zh: `先找“谁”，再找“做什么”。点上面已选的词，可以把它退回去。`
+      };
     }
     function renderVoices() {
       const select = document.getElementById("voiceSelect");
@@ -800,6 +926,7 @@
         list.appendChild(card);
       });
       renderGarage();
+      renderWrongBook();
     }
     function renderGarage() {
       const garage = JSON.parse(localStorage.getItem("jidamGarage") || "[]");
@@ -811,6 +938,59 @@
         car.textContent = `🏎️ ${item.car} ${item.score}分`;
         row.appendChild(car);
       });
+    }
+    function renderWrongBook() {
+      const box = document.getElementById("wrongBook");
+      if (!box) return;
+      const items = getWrongBook();
+      if (!items.length) {
+        box.innerHTML = "<span class='note'>暂时没有错题。做错的题会自动放在这里，每周可以再练。</span>";
+        return;
+      }
+      const recent = items.slice(-6).reverse();
+      box.innerHTML = `<div class="bar"><button class="primary" id="reviewWrong">练习错题</button><button class="ghost" id="clearWrong">清空错题本</button><span class="note">${items.length} 道错题</span></div>`;
+      recent.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "wrong-row";
+        row.innerHTML = `<div><b>${escapeHTML(item.courseTitle || "练习")}</b><br>${escapeHTML(item.prompt || item.question || item.finalText || "错题")}</div><span class="note">错 ${item.misses || 1} 次</span>`;
+        box.appendChild(row);
+      });
+      document.getElementById("reviewWrong").onclick = openWrongReview;
+      document.getElementById("clearWrong").onclick = () => {
+        saveWrongBook([]);
+        renderWrongBook();
+      };
+    }
+    function openWrongReview() {
+      const items = getWrongBook();
+      if (!items.length) return;
+      currentCourse = {
+        id: "wrong-review",
+        title: "错题复习",
+        mcq: items.filter(x => x.kind === "m").map(x => [x.question, x.options, x.answer, { key: x.key }]),
+        match: items.filter(x => x.kind === "t").map(x => [x.question, x.options, x.answer, { key: x.key }]),
+        order: items.filter(x => x.kind === "order").map(x => ({ ...x.item, wrongKey: x.key })),
+        clozeAnswers: [],
+        clozeWords: [],
+        clozeParts: ["这次复习没有短文填空。"],
+        dictationGroups: []
+      };
+      done = new Set();
+      right = 0;
+      answered = 0;
+      total = currentCourse.mcq.length + currentCourse.match.length + currentCourse.order.length;
+      document.getElementById("totalCount").textContent = total;
+      document.getElementById("pageSub").textContent = currentCourse.title;
+      document.getElementById("resultBox").style.display = "none";
+      document.getElementById("homeView").classList.remove("active");
+      document.getElementById("courseView").classList.add("active");
+      setActivePanel(currentCourse.mcq.length ? "mcqPanel" : currentCourse.match.length ? "matchPanel" : "orderPanel");
+      renderWriting();
+      renderQuestions("mcqList", currentCourse.mcq, "m", "复习错题。选择正确的字。");
+      renderQuestions("matchList", currentCourse.match, "t", "复习错题。选择可以搭配的词。");
+      renderOrder();
+      renderCloze();
+      updateScore();
     }
     function openCourse(id) {
       currentCourse = courses.find(c => c.id === id);
@@ -870,13 +1050,14 @@
     function renderQuestions(target, data, prefix, speechPrefix) {
       const list = document.getElementById(target);
       list.innerHTML = "";
-      data.forEach(([q, opts, ans], i) => {
+      data.forEach(([q, opts, ans, meta], i) => {
         const row = document.createElement("div");
         row.className = "question";
-        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${q}</div><div class="options"></div><div class="bar"><button class="primary submit-answer" disabled>确认本题</button><span class="note">先选择，可以修改；确认后才看对错。</span></div><div class="answer-line"></div>`;
+        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${q}</div><div class="options"></div><div class="bar"><button class="primary submit-answer" disabled>确认本题</button><span class="note">先选择，可以修改；确认后才看对错。</span></div><div class="answer-line"></div><div class="tutor-box"></div>`;
         row.querySelector(".speak").onclick = () => speak(`${speechPrefix}${q.replace("____", "空格")}`);
         const options = row.querySelector(".options");
         const answerLine = row.querySelector(".answer-line");
+        const tutorBox = row.querySelector(".tutor-box");
         const submit = row.querySelector(".submit-answer");
         let selected = -1;
         opts.forEach((o, j) => {
@@ -905,6 +1086,27 @@
           submit.disabled = true;
           submit.textContent = "已确认";
           answerLine.textContent = q.includes("____") ? `第${i + 1}题正确答案：${q.replace("____", opts[ans])}` : `第${i + 1}题正确答案：${opts[ans]}`;
+          if (isRight && meta?.key) {
+            removeWrong(meta.key);
+            setTutor(tutorBox, {
+              en: "Good job. This question is out of the wrong book.",
+              zh: "做得好。这题已经从错题本移除了。"
+            });
+          }
+          if (!isRight) {
+            const tutor = tutorForQuestion(prefix, q, opts, ans, selected);
+            setTutor(tutorBox, tutor);
+            recordWrong({
+              key: meta?.key || makeQuestionKey(prefix, q, opts[ans]),
+              kind: prefix,
+              question: q,
+              options: opts,
+              answer: ans,
+              chosen: selected,
+              prompt: questionAnswerText(q, opts[ans]),
+              tutor
+            });
+          }
           markQuestion(prefix + i, isRight);
         };
         list.appendChild(row);
@@ -916,7 +1118,7 @@
       (currentCourse.order || []).forEach((item, i) => {
         const row = document.createElement("div");
         row.className = "question";
-        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${item.prompt}</div><div class="answer-line"></div><div class="options"></div><div class="word-bank"></div>`;
+        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${item.prompt}</div><div class="answer-line"></div><div class="tutor-box"></div><div class="options"></div><div class="word-bank"></div>`;
         if (item.type === "sequence") {
           renderSequenceOrder(row, item, i);
           list.appendChild(row);
@@ -924,52 +1126,136 @@
         }
         const picked = [];
         const answerLine = row.querySelector(".answer-line");
+        const tutorBox = row.querySelector(".tutor-box");
         const options = row.querySelector(".options");
         const bank = row.querySelector(".word-bank");
-        row.querySelector(".speak").onclick = () => speak(item.prompt);
+        row.querySelector(".speak").onclick = () => speak(item.parts.join("，"));
+        const pickedLine = document.createElement("div");
+        pickedLine.className = "picked-line";
+        row.insertBefore(pickedLine, options);
+        const submitOrder = document.createElement("button");
+        submitOrder.className = "primary";
+        submitOrder.textContent = "确认句子";
+        submitOrder.disabled = true;
+        const giveUp = document.createElement("button");
+        giveUp.className = "ghost";
+        giveUp.textContent = "我放弃，看答案";
         function refresh() {
-          answerLine.textContent = picked.map(index => item.parts[index]).join(item.type === "words" ? "" : " ");
+          pickedLine.innerHTML = "";
+          if (!picked.length) {
+            const hint = document.createElement("span");
+            hint.className = "note";
+            hint.textContent = "点击下面词语来组句";
+            pickedLine.appendChild(hint);
+          }
+          picked.forEach((partIndex, pickedIndex) => {
+            const chip = document.createElement("button");
+            chip.textContent = item.parts[partIndex];
+            chip.title = "点我撤回这个词";
+            chip.onclick = () => {
+              if (done.has("o" + i)) return;
+              picked.splice(pickedIndex, 1);
+              const original = bank.querySelector(`[data-index="${partIndex}"]`);
+              if (original) original.disabled = false;
+              row.classList.remove("good", "bad");
+              answerLine.textContent = "";
+              tutorBox.innerHTML = "";
+              refresh();
+            };
+            pickedLine.appendChild(chip);
+          });
+          submitOrder.disabled = picked.length !== item.answer.length || done.has("o" + i);
         }
         function reset() {
           picked.length = 0;
           answerLine.textContent = "";
+          tutorBox.innerHTML = "";
           row.classList.remove("good", "bad");
           [...bank.children].forEach(button => {
             button.disabled = false;
             button.classList.remove("good", "bad");
           });
+          refresh();
         }
         item.parts.forEach((part, index) => {
           const button = document.createElement("button");
           button.textContent = item.type === "sentences" ? `${index + 1}. ${part}` : part;
+          button.dataset.index = index;
           button.onclick = () => {
+            if (done.has("o" + i)) return;
             picked.push(index);
             button.disabled = true;
+            row.classList.remove("good", "bad");
+            answerLine.textContent = "";
+            tutorBox.innerHTML = "";
             refresh();
-            if (picked.length === item.answer.length) {
-              const isRight = item.answer.every((answerIndex, orderIndex) => answerIndex === picked[orderIndex]);
-              row.classList.add(isRight ? "good" : "bad");
-              answerLine.textContent = isRight ? (item.finalText || picked.map(index => item.parts[index]).join("")) : `再排一次。正确答案：${item.finalText || item.answer.map(index => item.parts[index]).join(item.type === "words" ? "" : " ")}`;
-              [...bank.children].forEach(x => x.classList.toggle("good", isRight));
-              if (isRight) {
-                markQuestion("o" + i, true);
-              } else {
-                funnyWrongSound();
-              }
-            }
           };
           bank.appendChild(button);
         });
+        submitOrder.onclick = () => {
+          if (picked.length !== item.answer.length || done.has("o" + i)) return;
+          const isRight = item.answer.every((answerIndex, orderIndex) => answerIndex === picked[orderIndex]);
+          row.classList.toggle("good", isRight);
+          row.classList.toggle("bad", !isRight);
+          if (isRight) {
+            answerLine.textContent = item.finalText || picked.map(index => item.parts[index]).join("");
+            setTutor(tutorBox, {
+              en: "Good. The sentence order is right.",
+              zh: "很好。句子顺序对了。"
+            });
+            [...bank.children].forEach(x => x.disabled = true);
+            submitOrder.disabled = true;
+            giveUp.disabled = true;
+            if (item.wrongKey) removeWrong(item.wrongKey);
+            markQuestion("o" + i, true);
+          } else {
+            const tutor = tutorForWordOrder(item);
+            answerLine.textContent = "语序还不对。点击上面某个已选词，可以只撤回那一个词，再试一次。";
+            setTutor(tutorBox, tutor);
+            recordWrong({
+              key: item.wrongKey || makeQuestionKey("order", item.prompt, item.finalText),
+              kind: "order",
+              item,
+              prompt: item.prompt,
+              finalText: item.finalText,
+              tutor
+            });
+            funnyWrongSound();
+          }
+        };
+        giveUp.onclick = () => {
+          if (done.has("o" + i)) return;
+          answerLine.textContent = item.finalText;
+          setTutor(tutorBox, tutorForWordOrder(item));
+          [...bank.children].forEach(x => x.disabled = true);
+          pickedLine.querySelectorAll("button").forEach(x => x.disabled = true);
+          submitOrder.disabled = true;
+          giveUp.disabled = true;
+          recordWrong({
+            key: item.wrongKey || makeQuestionKey("order", item.prompt, item.finalText),
+            kind: "order",
+            item,
+            prompt: item.prompt,
+            finalText: item.finalText,
+            tutor: tutorForWordOrder(item)
+          });
+          markQuestion("o" + i, false);
+        };
         const resetButton = document.createElement("button");
         resetButton.className = "ghost";
         resetButton.textContent = "重排";
         resetButton.onclick = reset;
+        options.classList.add("order-actions");
+        options.appendChild(submitOrder);
         options.appendChild(resetButton);
+        options.appendChild(giveUp);
+        refresh();
         list.appendChild(row);
       });
     }
     function renderSequenceOrder(row, item, index) {
       const answerLine = row.querySelector(".answer-line");
+      const tutorBox = row.querySelector(".tutor-box");
       const options = row.querySelector(".options");
       const bank = row.querySelector(".word-bank");
       row.querySelector(".speak").onclick = () => speak([item.fixed, ...item.lines.map(line => line.text)].join(" "));
@@ -1002,12 +1288,27 @@
         });
         if (isRight) {
           answerLine.textContent = "顺序正确。";
+          setTutor(tutorBox, {
+            en: "Great. You used time order.",
+            zh: "很好。你按时间顺序排对了。"
+          });
           inputs.forEach(input => input.disabled = true);
           checkButton.disabled = true;
           checkButton.textContent = "已确认";
+          if (item.wrongKey) removeWrong(item.wrongKey);
           markQuestion("o" + index, true);
         } else {
-          answerLine.textContent = "有几句顺序不对，可以直接改数字。";
+          const tutor = tutorForSequence(item, values);
+          answerLine.textContent = "有几句顺序不对。绿色句子保留，红色句子改数字，再试一次。";
+          setTutor(tutorBox, tutor);
+          recordWrong({
+            key: item.wrongKey || makeQuestionKey("order", item.prompt, item.finalText),
+            kind: "order",
+            item,
+            prompt: item.prompt,
+            finalText: item.finalText,
+            tutor
+          });
           funnyWrongSound();
         }
       }
@@ -1036,9 +1337,26 @@
       checkButton.onclick = checkSequence;
       const showAnswer = document.createElement("button");
       showAnswer.className = "ghost";
-      showAnswer.textContent = "查看正确顺序";
+      showAnswer.textContent = "我放弃，看答案";
       showAnswer.onclick = () => {
+        if (done.has("o" + index)) return;
         answerLine.textContent = item.finalText;
+        setTutor(tutorBox, {
+          en: "Read the answer once. Try it again later.",
+          zh: "读一遍答案。下次再从错题本练。"
+        });
+        bank.querySelectorAll(".sequence-input").forEach(input => input.disabled = true);
+        checkButton.disabled = true;
+        showAnswer.disabled = true;
+        recordWrong({
+          key: item.wrongKey || makeQuestionKey("order", item.prompt, item.finalText),
+          kind: "order",
+          item,
+          prompt: item.prompt,
+          finalText: item.finalText,
+          tutor: tutorForSequence(item, [])
+        });
+        markQuestion("o" + index, false);
       };
       options.appendChild(checkButton);
       options.appendChild(showAnswer);
