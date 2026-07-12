@@ -130,6 +130,7 @@
     button:hover { border-color: var(--blue); }
     button.primary { background: var(--blue); border-color: var(--blue); color: white; }
     button.ghost { background: transparent; }
+    button.selected { background: #dbeeff; border-color: var(--blue); color: var(--blue-dark); }
     button.good { background: #e4f6eb; border-color: var(--ok); color: #126236; }
     button.bad { background: #ffe9e7; border-color: var(--bad); color: #9b2c25; }
     button:disabled { cursor: default; opacity: 1; }
@@ -208,6 +209,13 @@
     }
     .dictation-number { color: var(--blue); font-size: 20px; font-weight: 900; }
     .dictation-text { font-size: 22px; font-weight: 800; line-height: 1.45; }
+    .hidden-answers .dictation-text,
+    .hidden-answers .pinyin { display: none; }
+    .hidden-answers .dictation-content::before {
+      content: "文字已隐藏，听声音默写";
+      color: var(--muted);
+      font-weight: 800;
+    }
     .card-head {
       display: grid;
       grid-template-columns: auto 1fr auto auto;
@@ -291,26 +299,35 @@
     .sequence-card {
       grid-column: 1 / -1;
       display: grid;
-      gap: 10px;
+      gap: 6px;
       background: #fff;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 12px;
+      padding: 10px;
     }
     .sequence-row {
       display: grid;
-      grid-template-columns: 72px 1fr;
-      gap: 10px;
+      grid-template-columns: 54px 1fr;
+      gap: 8px;
       align-items: start;
-      padding: 8px;
+      padding: 6px 8px;
       border-radius: 8px;
       background: #f7fbff;
+      line-height: 1.35;
     }
     .sequence-row.fixed { background: #eef7ff; font-weight: 800; }
     .sequence-row.good { background: #eaf8ef; }
     .sequence-row.bad { background: #fff0ef; }
-    .number-bank { display: flex; flex-wrap: wrap; gap: 6px; }
-    .number-bank button { min-width: 42px; padding: 8px 10px; }
+    .sequence-input {
+      width: 46px;
+      padding: 6px;
+      border: 1px solid #bfd0e2;
+      border-radius: 8px;
+      font: inherit;
+      font-weight: 900;
+      text-align: center;
+      color: var(--blue-dark);
+    }
     .cloze-box {
       background: #fff;
       border: 1px solid var(--line);
@@ -414,7 +431,7 @@
         <div id="clozeList"></div>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-07-10-4</div>
+      <div class="version">v2026-07-12-1</div>
     </section>
   </main>
 
@@ -832,13 +849,18 @@
         if (!group.items.length) return;
         const section = document.createElement("section");
         section.className = "dictation-group";
-        section.innerHTML = `<div class="dictation-head"><h3>${group.title}</h3><button class="primary read-all">🔊 朗读全部</button></div><div class="dictation-list"></div>`;
-        section.querySelector(".read-all").onclick = () => speak(group.items.map(x => x.text).join("。"));
+        const normalizedItems = group.items.map(item => Array.isArray(item) ? { text: item[0], pinyin: item[1] || "" } : item);
+        section.innerHTML = `<div class="dictation-head"><h3>${group.title}</h3><button class="ghost hide-dictation">隐藏文字</button><button class="primary read-all">🔊 朗读全部</button></div><div class="dictation-list"></div>`;
+        section.querySelector(".read-all").onclick = () => speak(normalizedItems.map(x => x.text).join("。"));
+        section.querySelector(".hide-dictation").onclick = event => {
+          const hidden = section.classList.toggle("hidden-answers");
+          event.currentTarget.textContent = hidden ? "显示文字" : "隐藏文字";
+        };
         const itemList = section.querySelector(".dictation-list");
-        group.items.map(item => Array.isArray(item) ? { text: item[0], pinyin: item[1] || "" } : item).forEach((item, i) => {
+        normalizedItems.forEach((item, i) => {
           const row = document.createElement("div");
           row.className = "dictation-item";
-          row.innerHTML = `<span class="dictation-number">${i + 1}</span><div><div class="dictation-text">${item.text}</div><div class="pinyin">${item.pinyin}</div></div><button class="speak" title="朗读">🔊</button>`;
+          row.innerHTML = `<span class="dictation-number">${i + 1}</span><div class="dictation-content"><div class="dictation-text">${item.text}</div><div class="pinyin">${item.pinyin}</div></div><button class="speak" title="朗读">🔊</button>`;
           row.querySelector(".speak").onclick = () => speak(item.text);
           itemList.appendChild(row);
         });
@@ -851,24 +873,40 @@
       data.forEach(([q, opts, ans], i) => {
         const row = document.createElement("div");
         row.className = "question";
-        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${q}</div><div class="options"></div><div class="answer-line"></div>`;
+        row.innerHTML = `<button class="speak" title="朗读">🔊</button><div class="qtext">${i + 1}. ${q}</div><div class="options"></div><div class="bar"><button class="primary submit-answer" disabled>确认本题</button><span class="note">先选择，可以修改；确认后才看对错。</span></div><div class="answer-line"></div>`;
         row.querySelector(".speak").onclick = () => speak(`${speechPrefix}${q.replace("____", "空格")}`);
         const options = row.querySelector(".options");
         const answerLine = row.querySelector(".answer-line");
+        const submit = row.querySelector(".submit-answer");
+        let selected = -1;
         opts.forEach((o, j) => {
           const b = document.createElement("button");
           b.className = "option";
           b.textContent = `${j + 1}. ${o}`;
           b.onclick = () => {
-            const isRight = j === ans;
-            [...options.children].forEach(x => x.disabled = true);
-            b.classList.add(isRight ? "good" : "bad");
-            options.children[ans].classList.add("good");
-            answerLine.textContent = q.includes("____") ? `第${i + 1}题正确答案：${q.replace("____", opts[ans])}` : `第${i + 1}题正确答案：${opts[ans]}`;
-            markQuestion(prefix + i, isRight);
+            if (done.has(prefix + i)) return;
+            selected = j;
+            [...options.children].forEach(x => x.classList.remove("selected"));
+            b.classList.add("selected");
+            submit.disabled = false;
+            answerLine.textContent = "";
           };
           options.appendChild(b);
         });
+        submit.onclick = () => {
+          if (selected < 0 || done.has(prefix + i)) return;
+          const isRight = selected === ans;
+          [...options.children].forEach(x => {
+            x.disabled = true;
+            x.classList.remove("selected");
+          });
+          options.children[selected].classList.add(isRight ? "good" : "bad");
+          options.children[ans].classList.add("good");
+          submit.disabled = true;
+          submit.textContent = "已确认";
+          answerLine.textContent = q.includes("____") ? `第${i + 1}题正确答案：${q.replace("____", opts[ans])}` : `第${i + 1}题正确答案：${opts[ans]}`;
+          markQuestion(prefix + i, isRight);
+        };
         list.appendChild(row);
       });
     }
@@ -934,7 +972,6 @@
       const answerLine = row.querySelector(".answer-line");
       const options = row.querySelector(".options");
       const bank = row.querySelector(".word-bank");
-      const selected = new Map();
       row.querySelector(".speak").onclick = () => speak([item.fixed, ...item.lines.map(line => line.text)].join(" "));
       options.innerHTML = "";
       bank.className = "sequence-card";
@@ -942,66 +979,69 @@
       fixedRow.className = "sequence-row fixed";
       fixedRow.innerHTML = `<div>（1）</div><div>${item.fixed}</div>`;
       bank.appendChild(fixedRow);
-      function updateButtons() {
-        bank.querySelectorAll(".number-bank button").forEach(button => {
-          const number = Number(button.dataset.number);
-          const lineIndex = Number(button.dataset.line);
-          const usedByOtherLine = [...selected.entries()].some(([key, value]) => key !== lineIndex && value === number);
-          button.disabled = usedByOtherLine || done.has("o" + index);
-          button.classList.toggle("good", selected.get(lineIndex) === number);
-        });
-      }
-      function checkIfDone() {
-        if (selected.size !== item.lines.length) return;
-        const isRight = item.lines.every((line, lineIndex) => selected.get(lineIndex) === line.answer);
+      function checkSequence() {
+        if (done.has("o" + index)) return;
+        const inputs = [...bank.querySelectorAll(".sequence-input")];
+        const values = inputs.map(input => Number(input.value));
+        if (values.some(value => !item.choices.includes(value))) {
+          answerLine.textContent = `请在每个空格填 ${item.choices.join("、")}。`;
+          funnyWrongSound();
+          return;
+        }
+        if (new Set(values).size !== values.length) {
+          answerLine.textContent = "每个序号只能用一次。";
+          funnyWrongSound();
+          return;
+        }
+        const isRight = item.lines.every((line, lineIndex) => values[lineIndex] === line.answer);
         row.classList.toggle("good", isRight);
         row.classList.toggle("bad", !isRight);
         bank.querySelectorAll(".sequence-row:not(.fixed)").forEach((lineRow, lineIndex) => {
-          lineRow.classList.toggle("good", selected.get(lineIndex) === item.lines[lineIndex].answer);
-          lineRow.classList.toggle("bad", selected.get(lineIndex) !== item.lines[lineIndex].answer);
+          lineRow.classList.toggle("good", values[lineIndex] === item.lines[lineIndex].answer);
+          lineRow.classList.toggle("bad", values[lineIndex] !== item.lines[lineIndex].answer);
         });
         if (isRight) {
           answerLine.textContent = "顺序正确。";
+          inputs.forEach(input => input.disabled = true);
+          checkButton.disabled = true;
+          checkButton.textContent = "已确认";
           markQuestion("o" + index, true);
-          updateButtons();
         } else {
-          answerLine.textContent = "有几句顺序不对，可以直接改序号。";
+          answerLine.textContent = "有几句顺序不对，可以直接改数字。";
           funnyWrongSound();
         }
       }
       item.lines.forEach((line, lineIndex) => {
         const lineRow = document.createElement("div");
         lineRow.className = "sequence-row";
-        const numberBank = document.createElement("div");
-        numberBank.className = "number-bank";
-        item.choices.forEach(number => {
-          const button = document.createElement("button");
-          button.textContent = number;
-          button.dataset.number = number;
-          button.dataset.line = lineIndex;
-          button.onclick = () => {
-            if (done.has("o" + index)) return;
-            selected.set(lineIndex, number);
-            lineRow.classList.remove("good", "bad");
-            row.classList.remove("good", "bad");
-            updateButtons();
-            checkIfDone();
-          };
-          numberBank.appendChild(button);
-        });
+        const input = document.createElement("input");
+        input.className = "sequence-input";
+        input.inputMode = "numeric";
+        input.maxLength = 1;
+        input.setAttribute("aria-label", `第${lineIndex + 2}句序号`);
+        input.oninput = () => {
+          input.value = input.value.replace(/[^2-6]/g, "").slice(0, 1);
+          lineRow.classList.remove("good", "bad");
+          row.classList.remove("good", "bad");
+          answerLine.textContent = "";
+        };
         const text = document.createElement("div");
         text.textContent = line.text;
-        lineRow.append(numberBank, text);
+        lineRow.append(input, text);
         bank.appendChild(lineRow);
       });
+      const checkButton = document.createElement("button");
+      checkButton.className = "primary";
+      checkButton.textContent = "确认顺序";
+      checkButton.onclick = checkSequence;
       const showAnswer = document.createElement("button");
       showAnswer.className = "ghost";
       showAnswer.textContent = "查看正确顺序";
       showAnswer.onclick = () => {
         answerLine.textContent = item.finalText;
       };
+      options.appendChild(checkButton);
       options.appendChild(showAnswer);
-      updateButtons();
     }
     function renderCloze() {
       const list = document.getElementById("clozeList");
