@@ -211,7 +211,7 @@
     .dictation-list { display: grid; gap: 8px; }
     .dictation-item {
       display: grid;
-      grid-template-columns: 42px minmax(0, 1fr) auto 52px;
+      grid-template-columns: 42px minmax(0, 1fr) auto auto 52px;
       gap: 10px;
       align-items: center;
       min-height: 66px;
@@ -219,6 +219,12 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #fff;
+    }
+    .dictation-group:not(.show-mastered) .dictation-item.mastered { display: none; }
+    .dictation-item.mastered {
+      border-color: var(--ok);
+      background: #f0fbf4;
+      opacity: .72;
     }
     .dictation-number { color: var(--blue); font-size: 20px; font-weight: 900; }
     .dictation-text { font-size: 22px; font-weight: 800; line-height: 1.45; }
@@ -233,7 +239,7 @@
       color: var(--muted);
       font-weight: 800;
     }
-    .peek-one { white-space: nowrap; }
+    .peek-one, .master-one { white-space: nowrap; }
     .card-head {
       display: grid;
       grid-template-columns: auto 1fr auto auto;
@@ -389,6 +395,8 @@
       background: #f7fbff;
     }
     .picked-line button { background: #eef7ff; }
+    .picked-line button.good { background: #e4f6eb; border-color: var(--ok); color: #126236; }
+    .picked-line button.bad { background: #ffe9e7; border-color: var(--bad); color: #9b2c25; }
     .order-actions { grid-column: 1 / -1; }
     .sequence-card {
       grid-column: 1 / -1;
@@ -541,7 +549,7 @@
         </section>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-07-13-1</div>
+      <div class="version">v2026-07-14-2</div>
     </section>
   </main>
 
@@ -747,6 +755,7 @@
 
     const carModels = ["Cyber SUV", "蓝焰跑车", "星际赛车", "闪电越野车", "银翼概念车", "霓虹方程式", "磁悬浮小车"];
     const WRONG_KEY = "zhidanWrongBook";
+    const MASTERED_KEY = "zhidanMasteredDictation";
     let currentCourse = null;
     let showCopies = true;
     let done = new Set();
@@ -961,6 +970,22 @@
     }
     function makeQuestionKey(type, q, answer) {
       return `${currentCourse?.id || "course"}|${type}|${q}|${answer}`;
+    }
+    function getMasteredDictation() {
+      return JSON.parse(localStorage.getItem(MASTERED_KEY) || "[]");
+    }
+    function saveMasteredDictation(items) {
+      localStorage.setItem(MASTERED_KEY, JSON.stringify([...new Set(items)]));
+    }
+    function dictationKey(group, text) {
+      return `${currentCourse?.id || "course"}|${group.kind || "hcl"}|${text}`;
+    }
+    function setDictationMastered(row, key, mastered) {
+      const items = getMasteredDictation();
+      const next = mastered ? [...items, key] : items.filter(item => item !== key);
+      saveMasteredDictation(next);
+      row.classList.toggle("mastered", mastered);
+      row.querySelector(".master-one").textContent = mastered ? "还没记住" : "会了";
     }
     function recordWrong(item) {
       const items = getWrongBook();
@@ -1283,10 +1308,20 @@
       visibleGroups.forEach(group => {
         const section = document.createElement("section");
         section.className = "dictation-group";
+        const mastered = getMasteredDictation();
         const normalizedItems = group.items.map(item => Array.isArray(item) ? { text: item[0], pinyin: item[1] || "" } : item);
         const heading = visibleGroups.length > 1 ? `<h3>${group.title}</h3>` : "";
-        section.innerHTML = `<div class="dictation-head">${heading}<div class="bar"><button class="ghost hide-all">全部隐藏</button><button class="ghost partial-hide">部分隐藏</button><button class="ghost show-all">全部显示</button><button class="primary read-all">🔊 朗读全部</button></div></div><div class="dictation-list"></div>`;
-        section.querySelector(".read-all").onclick = () => speak(normalizedItems.map(x => x.text).join("。"));
+        section.innerHTML = `<div class="dictation-head">${heading}<div class="bar"><button class="ghost hide-mastered-toggle">显示已会</button><button class="ghost hide-all">全部隐藏</button><button class="ghost partial-hide">部分隐藏</button><button class="ghost show-all">全部显示</button><button class="primary read-all">🔊 朗读全部</button></div></div><div class="dictation-list"></div>`;
+        section.querySelector(".hide-mastered-toggle").onclick = event => {
+          const showing = section.classList.toggle("show-mastered");
+          event.currentTarget.textContent = showing ? "隐藏已会" : "显示已会";
+        };
+        section.querySelector(".read-all").onclick = () => {
+          const wordsToRead = [...section.querySelectorAll(".dictation-item:not(.mastered) .dictation-text")]
+            .map(node => node.textContent.trim())
+            .filter(Boolean);
+          speak((wordsToRead.length ? wordsToRead : normalizedItems.map(x => x.text)).join("。"));
+        };
         section.querySelector(".hide-all").onclick = () => {
           section.querySelectorAll(".dictation-item").forEach(row => setDictationRowMode(row, "hidden"));
         };
@@ -1300,7 +1335,12 @@
         normalizedItems.forEach((item, i) => {
           const row = document.createElement("div");
           row.className = "dictation-item";
-          row.innerHTML = `<span class="dictation-number">${i + 1}</span><div class="dictation-content"><div class="dictation-text">${item.text}</div><div class="dictation-hint">${makeDictationHint(item.text)}</div><div class="pinyin">${item.pinyin}</div></div><button class="ghost peek-one">看一下</button><button class="speak" title="朗读">🔊</button>`;
+          const key = dictationKey(group, item.text);
+          row.classList.toggle("mastered", mastered.includes(key));
+          row.innerHTML = `<span class="dictation-number">${i + 1}</span><div class="dictation-content"><div class="dictation-text">${item.text}</div><div class="dictation-hint">${makeDictationHint(item.text)}</div><div class="pinyin">${item.pinyin}</div></div><button class="ghost master-one">${mastered.includes(key) ? "还没记住" : "会了"}</button><button class="ghost peek-one">看一下</button><button class="speak" title="朗读">🔊</button>`;
+          row.querySelector(".master-one").onclick = () => {
+            setDictationMastered(row, key, !row.classList.contains("mastered"));
+          };
           row.querySelector(".peek-one").onclick = event => {
             const isCovered = row.classList.contains("is-hidden") || row.classList.contains("is-partial");
             setDictationRowMode(row, isCovered ? "visible" : "hidden");
@@ -1415,6 +1455,8 @@
         const pickedLine = document.createElement("div");
         pickedLine.className = "picked-line";
         row.insertBefore(pickedLine, options);
+        pickedLine.insertAdjacentElement("afterend", answerLine);
+        answerLine.insertAdjacentElement("afterend", tutorBox);
         const submitOrder = document.createElement("button");
         submitOrder.className = "primary";
         submitOrder.textContent = "确认句子";
@@ -1447,6 +1489,12 @@
             pickedLine.appendChild(chip);
           });
           submitOrder.disabled = picked.length !== item.answer.length || done.has("o" + i);
+        }
+        function markPickedWords() {
+          [...pickedLine.querySelectorAll("button")].forEach((chip, pickedIndex) => {
+            chip.classList.remove("good", "bad");
+            chip.classList.add(item.answer[pickedIndex] === picked[pickedIndex] ? "good" : "bad");
+          });
         }
         function reset() {
           picked.length = 0;
@@ -1481,6 +1529,7 @@
           row.classList.toggle("bad", !isRight);
           if (isRight) {
             answerLine.textContent = item.finalText || picked.map(index => item.parts[index]).join("");
+            markPickedWords();
             setTutor(tutorBox, {
               en: "Good. The sentence order is right.",
               zh: "很好。句子顺序对了。"
@@ -1492,7 +1541,9 @@
             markQuestion("o" + i, true);
           } else {
             const tutor = tutorForWordOrder(item);
-            answerLine.textContent = "语序还不对。点击上面某个已选词，可以只撤回那一个词，再试一次。";
+            markPickedWords();
+            answerLine.innerHTML = `<div>正确答案：${escapeHTML(item.finalText)}</div><button class="ghost retry-order">再试一次</button>`;
+            answerLine.querySelector(".retry-order").onclick = reset;
             setTutor(tutorBox, tutor);
             recordWrong({
               key: item.wrongKey || makeQuestionKey("order", item.prompt, item.finalText),
@@ -1543,6 +1594,8 @@
       row.querySelector(".speak").onclick = () => speak([item.fixed, ...item.lines.map(line => line.text)].join(" "));
       options.innerHTML = "";
       bank.className = "sequence-card";
+      bank.insertAdjacentElement("afterend", answerLine);
+      answerLine.insertAdjacentElement("afterend", tutorBox);
       const fixedRow = document.createElement("div");
       fixedRow.className = "sequence-row fixed";
       fixedRow.innerHTML = `<div>（1）</div><div>${annotateText(item.fixed)}</div>`;
