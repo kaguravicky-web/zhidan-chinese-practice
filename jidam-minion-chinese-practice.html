@@ -549,7 +549,7 @@
         </section>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-07-14-2</div>
+      <div class="version">v2026-07-15-1</div>
     </section>
   </main>
 
@@ -869,9 +869,10 @@
       tone(260, .12, "sawtooth", .045, 0);
       tone(150, .18, "sawtooth", .04, .12);
     }
-    function speak(text, lang = "zh-CN") {
+    function speak(text, lang = "zh-CN", readPunctuation = false) {
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
+      const spokenText = readPunctuation && lang.startsWith("zh") ? verbalizeChinesePunctuation(text) : text;
+      const u = new SpeechSynthesisUtterance(spokenText);
       u.lang = lang;
       u.rate = speechRate;
       u.pitch = lang.startsWith("en") ? 0.95 : 0.78;
@@ -882,6 +883,26 @@
       const zh = voices.find(v => /zh/i.test(v.lang));
       u.voice = selected || (lang.startsWith("en") ? en : male || zh) || null;
       window.speechSynthesis.speak(u);
+    }
+    function verbalizeChinesePunctuation(text) {
+      return String(text)
+        .replace(/，/g, "，逗号，")
+        .replace(/,/g, "，逗号，")
+        .replace(/。/g, "。句号。")
+        .replace(/？/g, "？问号。")
+        .replace(/\?/g, "？问号。")
+        .replace(/！/g, "！感叹号。")
+        .replace(/!/g, "！感叹号。")
+        .replace(/；/g, "；分号，")
+        .replace(/;/g, "；分号，")
+        .replace(/：/g, "：冒号，")
+        .replace(/:/g, "：冒号，");
+    }
+    function formatDictationText(text) {
+      const value = String(text).trim();
+      if (!value || /[。！？.!?]$/.test(value)) return value;
+      const chineseLength = Array.from(value).filter(char => /[\u3400-\u9fff]/.test(char)).length;
+      return /[，,；;：:]/.test(value) || chineseLength >= 10 ? `${value}。` : value;
     }
     function escapeHTML(value) {
       return String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
@@ -1309,7 +1330,10 @@
         const section = document.createElement("section");
         section.className = "dictation-group";
         const mastered = getMasteredDictation();
-        const normalizedItems = group.items.map(item => Array.isArray(item) ? { text: item[0], pinyin: item[1] || "" } : item);
+        const normalizedItems = group.items.map(item => {
+          const source = Array.isArray(item) ? { text: item[0], pinyin: item[1] || "" } : item;
+          return { ...source, text: formatDictationText(source.text) };
+        });
         const heading = visibleGroups.length > 1 ? `<h3>${group.title}</h3>` : "";
         section.innerHTML = `<div class="dictation-head">${heading}<div class="bar"><button class="ghost hide-mastered-toggle">显示已会</button><button class="ghost hide-all">全部隐藏</button><button class="ghost partial-hide">部分隐藏</button><button class="ghost show-all">全部显示</button><button class="primary read-all">🔊 朗读全部</button></div></div><div class="dictation-list"></div>`;
         section.querySelector(".hide-mastered-toggle").onclick = event => {
@@ -1320,7 +1344,7 @@
           const wordsToRead = [...section.querySelectorAll(".dictation-item:not(.mastered) .dictation-text")]
             .map(node => node.textContent.trim())
             .filter(Boolean);
-          speak((wordsToRead.length ? wordsToRead : normalizedItems.map(x => x.text)).join("。"));
+          speak((wordsToRead.length ? wordsToRead : normalizedItems.map(x => x.text)).join(" "), "zh-CN", true);
         };
         section.querySelector(".hide-all").onclick = () => {
           section.querySelectorAll(".dictation-item").forEach(row => setDictationRowMode(row, "hidden"));
@@ -1345,7 +1369,7 @@
             const isCovered = row.classList.contains("is-hidden") || row.classList.contains("is-partial");
             setDictationRowMode(row, isCovered ? "visible" : "hidden");
           };
-          row.querySelector(".speak").onclick = () => speak(item.text);
+          row.querySelector(".speak").onclick = () => speak(item.text, "zh-CN", true);
           itemList.appendChild(row);
         });
         list.appendChild(section);
