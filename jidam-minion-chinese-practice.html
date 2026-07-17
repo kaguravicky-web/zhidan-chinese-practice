@@ -9,6 +9,10 @@
       --blue: #1f6fbf;
       --blue-dark: #154a80;
       --blue-soft: #eaf4ff;
+      --school: #f2c94c;
+      --school-dark: #7a5700;
+      --school-soft: #fff7d8;
+      --school-line: #ecd083;
       --bg: #f6f9fc;
       --card: #ffffff;
       --text: #17212b;
@@ -136,6 +140,29 @@
     button:disabled { cursor: default; opacity: 1; }
     .view { display: none; }
     .view.active { display: block; }
+    .home-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 14px;
+    }
+    .home-tab.active[data-home="schoolHomePanel"] {
+      background: var(--school);
+      border-color: var(--school);
+      color: #2f2300;
+    }
+    .home-tab.active[data-home="hclHomePanel"] {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+    .home-tab.active[data-home="workbookHomePanel"] {
+      background: #17212b;
+      border-color: #17212b;
+      color: #fff;
+    }
+    .home-panel { display: none; }
+    .home-panel.active { display: block; }
     .home-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -154,6 +181,36 @@
       margin-bottom: 10px;
       color: var(--blue);
       font-weight: 900;
+    }
+    .course-card.school-card {
+      border-color: var(--school-line);
+      background: linear-gradient(180deg, var(--school-soft), #fff);
+      box-shadow: 0 8px 22px rgba(122, 87, 0, .08);
+    }
+    .course-card.school-card::before {
+      content: "🟡  学校听写";
+      color: var(--school-dark);
+    }
+    .course-card.school-card h2 { color: var(--school-dark); }
+    .course-card.school-card button.primary {
+      background: var(--school-dark);
+      border-color: var(--school-dark);
+      color: #fff;
+    }
+    .course-card.hcl-card {
+      border-color: #b9d7f3;
+      background: linear-gradient(180deg, var(--blue-soft), #fff);
+    }
+    .course-card.hcl-card::before {
+      content: "🔵  HCL 练习";
+      color: var(--blue-dark);
+    }
+    .course-card.mixed-card {
+      border-top: 5px solid var(--blue);
+      box-shadow: inset 0 5px 0 var(--school);
+    }
+    .course-card.mixed-card::before {
+      content: "🟡 学校 + 🔵 HCL";
     }
     .course-card h2 { font-size: 24px; }
     .course-meta { color: var(--muted); line-height: 1.7; margin: 10px 0 16px; }
@@ -192,6 +249,17 @@
     }
     .tabs, .subtabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; }
     .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .tab[data-panel="schoolWritingPanel"].active {
+      background: var(--school);
+      color: #2f2300;
+      border-color: var(--school);
+    }
+    .tab[data-panel="hclWritingPanel"].active,
+    .tab[data-panel="hclPracticePanel"].active {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue);
+    }
     .subtab.active { background: #dbeafe; color: var(--blue-dark); border-color: #93c5fd; }
     .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 10px 0 14px; }
     .note { color: var(--muted); font-weight: 700; }
@@ -199,6 +267,30 @@
     .practice-section { display: none; }
     .practice-section.active { display: block; }
     .practice-card { padding: 14px; }
+    #schoolWritingPanel {
+      border-color: var(--school-line);
+      background: linear-gradient(180deg, var(--school-soft), #fff);
+    }
+    #schoolWritingPanel h2,
+    #schoolWritingPanel .dictation-head h3,
+    #schoolWritingPanel .dictation-number,
+    #schoolWritingPanel .dictation-hint {
+      color: var(--school-dark);
+    }
+    #schoolWritingPanel .dictation-item {
+      border-color: var(--school-line);
+      background: #fffdf4;
+    }
+    #schoolWritingPanel .primary {
+      background: var(--school-dark);
+      border-color: var(--school-dark);
+      color: #fff;
+    }
+    #hclWritingPanel,
+    #hclPracticePanel {
+      border-color: #b9d7f3;
+      background: linear-gradient(180deg, #f7fbff, #fff);
+    }
     .dictation-group { margin-bottom: 18px; }
     .dictation-head {
       display: flex;
@@ -489,19 +581,31 @@
       </div>
       <button class="parent-open" id="openParent">⚙ 家长设置</button>
     </div>
-  </header>
+    </header>
 
-  <main>
+    <main>
     <section class="view active" id="homeView">
-      <div class="home-grid" id="courseList"></div>
-      <div class="garage">
-        <h2>智澹的车库</h2>
-        <div class="car-row" id="garageCars"></div>
-      </div>
-      <div class="garage wrong-book">
-        <h2>错题本</h2>
-        <div id="wrongBook"></div>
-      </div>
+      <nav class="home-tabs">
+        <button class="home-tab active" data-home="schoolHomePanel">学校</button>
+        <button class="home-tab" data-home="hclHomePanel">HCL</button>
+        <button class="home-tab" data-home="workbookHomePanel">错题本</button>
+      </nav>
+      <section class="home-panel active" id="schoolHomePanel">
+        <div class="home-grid" id="schoolCourseList"></div>
+      </section>
+      <section class="home-panel" id="hclHomePanel">
+        <div class="home-grid" id="hclCourseList"></div>
+      </section>
+      <section class="home-panel" id="workbookHomePanel">
+        <div class="garage">
+          <h2>智澹的车库</h2>
+          <div class="car-row" id="garageCars"></div>
+        </div>
+        <div class="garage wrong-book">
+          <h2>错题本</h2>
+          <div id="wrongBook"></div>
+        </div>
+      </section>
     </section>
 
     <section class="view" id="courseView">
@@ -549,7 +653,7 @@
         </section>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-07-15-1</div>
+      <div class="version">v2026-07-17-5</div>
     </section>
   </main>
 
@@ -583,10 +687,36 @@
   </dialog>
 
   <script>
+    function schoolDictationCourse(id, title, isoDate, items) {
+      return {
+        id,
+        title,
+        date: isoDate,
+        summary: `学校听写 ${items.length} 项`,
+        dictationGroups: [{
+          kind: "school",
+          title,
+          items
+        }, {
+          kind: "hcl",
+          title: "HCL 听写",
+          items: []
+        }],
+        words: [],
+        sentences: items.map(item => Array.isArray(item) ? item[0] : item.text),
+        mcq: [],
+        match: [],
+        order: [],
+        clozeWords: [],
+        clozeAnswers: [],
+        clozeParts: ["这一课只有学校听写。"]
+      };
+    }
+
     const courses = [{
       id: "lesson-10",
-      title: "2026-07-15",
-      date: "第十课",
+      title: "第十课 T3wk3 7/15",
+      date: "2026-07-15",
       summary: "学校听写 8 项、HCL 听写 16 项、HCL 作业练习",
       words: [
         ["收拾", "shou shi"], ["漂亮", "piao liang"], ["追上", "zhui shang"], ["觉得", "jue de"],
@@ -648,6 +778,160 @@
         " 它。几天后，小鸟的伤好了。它望着窗外，好像想飞出去。小文知道小鸟想妈妈了，于是，他先用手机 ",
         " 小鸟的照片，然后才依依不舍地把小鸟送回 ",
         " 里。"
+      ]
+    },
+    schoolDictationCourse("school-lesson-11", "第十一课 T3wk5 7/29", "2026-07-29", [
+      ["所以", "suǒ yǐ"],
+      ["日用品", "rì yòng pǐn"],
+      ["组屋楼下", "zǔ wū lóu xià"],
+      ["停车场里停着三辆汽车。", "tíng chē chǎng lǐ tíng zhe sān liàng qì chē"],
+      ["我们用自己的环保袋吧！", "wǒ men yòng zì jǐ de huán bǎo dài ba"],
+      ["小丽把用过的纸折成小纸盒。", "xiǎo lì bǎ yòng guò de zhǐ zhé chéng xiǎo zhǐ hé"],
+      ["如果你一直认真上课，就能把华文学好。", "rú guǒ nǐ yì zhí rèn zhēn shàng kè, jiù néng bǎ huá wén xué hǎo"]
+    ]),
+    schoolDictationCourse("school-lesson-12", "第十二课 T3wk7 8/11", "2026-08-11", [
+      ["亮晶晶", "liàng jīng jīng"],
+      ["生日礼物", "shēng rì lǐ wù"],
+      ["新加坡国旗", "xīn jiā pō guó qí"],
+      ["弟弟在开心地拍手呢！", "dì di zài kāi xīn de pāi shǒu ne"],
+      ["国庆日那天，大家兴奋地唱着歌。", "guó qìng rì nà tiān, dà jiā xīng fèn de chàng zhe gē"],
+      ["妹妹在纸上画了月亮和五颗星星。", "mèi mei zài zhǐ shàng huà le yuè liang hé wǔ kē xīng xing"]
+    ]),
+    schoolDictationCourse("school-lesson-13", "第十三课 T3wk9 8/26", "2026-08-26", [
+      ["养虾", "yǎng xiā"],
+      ["指着地图", "zhǐ zhe dì tú"],
+      ["急忙赶去", "jí máng gǎn qù"],
+      ["这片森林里有许多棵大树。", "zhè piàn sēn lín lǐ yǒu xǔ duō kē dà shù"],
+      ["沿着沙滩往前走，你就会看到一座小桥了。", "yán zhe shā tān wǎng qián zǒu, nǐ jiù huì kàn dào yí zuò xiǎo qiáo le"],
+      ["我们虽然没有得到第一名，但是还是很开心。", "wǒ men suī rán méi yǒu dé dào dì yī míng, dàn shì hái shì hěn kāi xīn"]
+    ]),
+    schoolDictationCourse("school-lesson-14", "第十四课 T4wk2 9/23", "2026-09-23", [
+      ["苦瓜", "kǔ guā"],
+      ["真和假", "zhēn hé jiǎ"],
+      ["慢慢地走", "màn màn de zǒu"],
+      ["躺在床上", "tǎng zài chuáng shàng"],
+      ["他饿了，马上咬了一口面包。", "tā è le, mǎ shàng yǎo le yì kǒu miàn bāo"],
+      ["小狗吃饱了，主人带它去公园玩。", "xiǎo gǒu chī bǎo le, zhǔ rén dài tā qù gōng yuán wán"],
+      ["小兔的毛灰灰的，身体胖胖的，眼睛圆圆的。", "xiǎo tù de máo huī huī de, shēn tǐ pàng pàng de, yǎn jing yuán yuán de"]
+    ]),
+    schoolDictationCourse("school-lesson-15", "第十五课 T4wk4 10/7", "2026-10-07", [
+      ["课室", "kè shì"],
+      ["简单", "jiǎn dān"],
+      ["逃不掉", "táo bù diào"],
+      ["练习写字", "liàn xí xiě zì"],
+      ["弟弟肚子痛得冒出冷汗。", "dì di dù zi tòng de mào chū lěng hàn"],
+      ["他吓了一跳，一动也不敢动。", "tā xià le yí tiào, yí dòng yě bù gǎn dòng"],
+      ["小安在班上闹了笑话，引得大家哈哈大笑。", "xiǎo ān zài bān shàng nào le xiào huà, yǐn de dà jiā hā hā dà xiào"]
+    ]),
+    schoolDictationCourse("school-lesson-16", "第十六课 T4wk6 10/21", "2026-10-21", [
+      ["终于", "zhōng yú"],
+      ["姐妹俩", "jiě mèi liǎ"],
+      ["吹泡泡", "chuī pào pào"],
+      ["虎头蛇尾", "hǔ tóu shé wěi"],
+      ["认识新朋友", "rèn shi xīn péng you"],
+      ["他爱看书，却不爱写字。", "tā ài kàn shū, què bù ài xiě zì"],
+      ["小明低下了头，不敢抬起来。", "xiǎo míng dī xià le tóu, bù gǎn tái qǐ lái"],
+      ["小华上数学课不专心，结果一道题也不会做。", "xiǎo huá shàng shù xué kè bù zhuān xīn, jié guǒ yí dào tí yě bù huì zuò"]
+    ]),
+    schoolDictationCourse("school-lesson-17", "第十七课 T4wk6 11/4", "2026-11-04", [
+      ["捞出", "lāo chū"],
+      ["金色", "jīn sè"],
+      ["银色", "yín sè"],
+      ["摘花", "zhāi huā"],
+      ["失去", "shī qù"],
+      ["做决定", "zuò jué dìng"],
+      ["千千万万", "qiān qiān wàn wàn"],
+      ["妈妈让我等她回家再说。", "mā ma ràng wǒ děng tā huí jiā zài shuō"],
+      ["老师叫我们立刻检查分数。", "lǎo shī jiào wǒ men lì kè jiǎn chá fēn shù"]
+    ]),
+    {
+      id: "hcl-week24-lesson-11",
+      title: "HCL Week 24 第十一课《环保小天使》",
+      date: "2026-07-17",
+      summary: "HCL 听写 15 项、HCL 作业练习",
+      dictationGroups: [{
+        kind: "school",
+        title: "学校听写",
+        items: []
+      }, {
+        kind: "hcl",
+        title: "HCL 听写",
+        items: [
+          ["认为", "rèn wéi"], ["浪费", "làng fèi"], ["塑料袋", "sù liào dài"], ["装满", "zhuāng mǎn"],
+          ["组屋", "zǔ wū"], ["尽力", "jìn lì"], ["停车场", "tíng chē chǎng"], ["日用品", "rì yòng pǐn"],
+          ["巴刹", "bā shā"], ["使用", "shǐ yòng"], ["人人有责", "rén rén yǒu zé"], ["责任", "zé rèn"],
+          ["一份报纸", "yí fèn bào zhǐ"], ["环保袋", "huán bǎo dài"], ["如果", "rú guǒ"]
+        ]
+      }],
+      words: [
+        ["认为", "rèn wéi"], ["浪费", "làng fèi"], ["塑料袋", "sù liào dài"], ["装满", "zhuāng mǎn"],
+        ["组屋", "zǔ wū"], ["尽力", "jìn lì"], ["停车场", "tíng chē chǎng"], ["日用品", "rì yòng pǐn"],
+        ["巴刹", "bā shā"], ["使用", "shǐ yòng"], ["人人有责", "rén rén yǒu zé"], ["责任", "zé rèn"],
+        ["一份报纸", "yí fèn bào zhǐ"], ["环保袋", "huán bǎo dài"], ["如果", "rú guǒ"]
+      ],
+      sentences: [],
+      mcq: [
+        ["妹妹一不小心踩到石头，跌倒了。请选择“跌倒”的正确读音。", ["diē dǎo", "diē dào", "dié dǎo", "dié dào"], 0],
+        ["睡觉前一定要记得关灯，以免浪费电。请选择“睡觉”的正确读音。", ["shuì jiào", "shuì jiāo", "shuì zào", "shuì ziào"], 0],
+        ["星____天早上，我们在咖啡店吃早餐。", ["期", "棋", "其", "旗"], 0],
+        ["妈妈在药店买了一瓶____护皮肤的药，然后才回家。", ["报", "包", "保", "饱"], 2],
+        ["我相信这件事____不是小明做的。", ["清", "晴", "请", "情"], 3],
+        ["现在到超市买东西，可以不必____现金，刷卡就行了。", ["符", "咐", "付", "附"], 2],
+        ["我会用纸折出一个小小的纸____。", ["盒", "合", "和", "河"], 0],
+        ["水是宝贵的，我们不应该随意____。", ["使用", "利用", "浪费", "花费"], 2],
+        ["____你身上没钱，就别去商场购物了。", ["即使", "就算", "如果", "为了"], 2],
+        ["用过的瓶子，可以放进____回收箱里。", ["礼物", "用品", "废物", "食品"], 2]
+      ],
+      match: [
+        ["____报纸", ["阅读", "购买", "装进", "认为"], 0],
+        ["尽力____", ["清洗", "完成", "代替", "使用"], 1],
+        ["装进____", ["瓶子", "箱子", "水电", "报纸"], 1],
+        ["清洗____", ["塑料袋", "报纸", "瓶子", "现金"], 2],
+        ["购买____", ["东西", "楼下", "不对", "环保"], 0],
+        ["认为____", ["报纸", "不对", "东西", "楼下"], 1],
+        ["废物____", ["代替", "购买", "利用", "尽力"], 2],
+        ["组屋____", ["水电", "楼下", "箱子", "瓶子"], 1]
+      ],
+      order: [
+        {
+          prompt: "句子变变变：用“如果……就……”连接句子",
+          type: "words",
+          parts: ["如果", "你", "明天", "有空", "我们", "就", "去图书馆", "借书"],
+          answer: [0, 1, 2, 3, 4, 5, 6, 7],
+          finalText: "如果你明天有空，我们就去图书馆借书。"
+        },
+        {
+          prompt: "句子变变变：用“因为……所以……”连接句子",
+          type: "words",
+          parts: ["因为", "弟弟", "生病了", "所以", "他", "没有", "去上学"],
+          answer: [0, 1, 2, 3, 4, 5, 6],
+          finalText: "因为弟弟生病了，所以他没有去上学。"
+        },
+        {
+          prompt: "组句成段：按试卷格式给每句选序号。",
+          type: "sequence",
+          fixed: "星期天早上，小丽在家里吃早餐。",
+          choices: [2, 3, 4, 5, 6],
+          lines: [
+            { text: "接着，她把干净的盘子收好。", answer: 4 },
+            { text: "妈妈看到了，说小丽是个懂事的孩子。", answer: 6 },
+            { text: "吃完后，小丽把盘子拿去洗。", answer: 2 },
+            { text: "最后，小丽把饭桌抹干净。", answer: 5 },
+            { text: "她先把盘子洗干净，再把盘子抹干。", answer: 3 }
+          ],
+          answer: [4, 6, 2, 5, 3],
+          finalText: "1. 星期天早上，小丽在家里吃早餐。 2. 吃完后，小丽把盘子拿去洗。 3. 她先把盘子洗干净，再把盘子抹干。 4. 接着，她把干净的盘子收好。 5. 最后，小丽把饭桌抹干净。 6. 妈妈看到了，说小丽是个懂事的孩子。"
+        }
+      ],
+      clozeWords: ["立刻", "后退", "附近", "开始", "跌倒", "满头大汗"],
+      clozeAnswers: ["开始", "满头大汗", "跌倒", "立刻", "附近"],
+      clozeParts: [
+        "九岁那一年，小福喜欢上了玩滑板。刚 ",
+        " 学习的时候，小福怎么也滑不好，但是他一点儿也不着急，一直练习。不一会儿，小福就累得 ",
+        "。突然，一个小女孩从旁边跑过来。小福没有看到她，结果把小女孩撞得 ",
+        " 在地。小女孩的腿受伤了，她痛得大哭起来。小福 ",
+        " 跑上前扶起小女孩，大声说：“对不起！你还好吗？” 小福知道小女孩就住在 ",
+        "，想陪小女孩走回家，可是小女孩摇摇头，转过身就跑掉了。"
       ]
     }, {
       id: "lesson-11",
@@ -843,7 +1127,32 @@
       "收养": ["shōu yǎng", "把动物或孩子带回家照顾。", "adopt"],
       "窗外": ["chuāng wài", "窗子的外面。", "outside the window"],
       "拍下": ["pāi xià", "用相机或手机拍照片。", "take a photo"],
-      "森林": ["sēn lín", "很多树长在一起的地方。", "forest"]
+      "森林": ["sēn lín", "很多树长在一起的地方。", "forest"],
+      "认为": ["rèn wéi", "心里觉得是这样。", "think; believe"],
+      "装满": ["zhuāng mǎn", "把东西放到满满的。", "fill up"],
+      "组屋": ["zǔ wū", "新加坡政府建的住宅楼。", "HDB flat"],
+      "尽力": ["jìn lì", "用最大的力气去做。", "do one's best"],
+      "停车场": ["tíng chē chǎng", "停放汽车的地方。", "car park"],
+      "日用品": ["rì yòng pǐn", "每天生活会用到的东西。", "daily necessities"],
+      "巴刹": ["bā shā", "新加坡常说的市场。", "market"],
+      "人人有责": ["rén rén yǒu zé", "每个人都有责任。", "everyone is responsible"],
+      "环保袋": ["huán bǎo dài", "可以重复使用、比较环保的袋子。", "reusable bag"],
+      "跌倒": ["diē dǎo", "摔倒在地上。", "fall down"],
+      "睡觉": ["shuì jiào", "休息、进入睡眠。", "sleep"],
+      "现金": ["xiàn jīn", "纸币和硬币。", "cash"],
+      "刷卡": ["shuā kǎ", "用银行卡或交通卡付款。", "pay by card"],
+      "随意": ["suí yì", "想怎样就怎样，不太小心。", "as one likes"],
+      "回收箱": ["huí shōu xiāng", "放可回收物品的箱子。", "recycling bin"],
+      "阅读": ["yuè dú", "看书、看文章。", "read"],
+      "清洗": ["qīng xǐ", "洗干净。", "wash clean"],
+      "购买": ["gòu mǎi", "买东西。", "buy"],
+      "废物利用": ["fèi wù lì yòng", "把没用的东西再拿来使用。", "reuse waste"],
+      "后退": ["hòu tuì", "往后走。", "step back"],
+      "附近": ["fù jìn", "离这里不远的地方。", "nearby"],
+      "满头大汗": ["mǎn tóu dà hàn", "头上都是汗，表示很累或很热。", "sweating heavily"],
+      "滑板": ["huá bǎn", "可以站在上面滑行的板。", "skateboard"],
+      "扶起": ["fú qǐ", "扶着别人让他站起来。", "help someone up"],
+      "懂事": ["dǒng shì", "明白道理，会体贴别人。", "sensible"]
     };
 
     const audioCtx = () => new (window.AudioContext || window.webkitAudioContext)();
@@ -1194,17 +1503,44 @@
     }
 
     function renderHome() {
-      const list = document.getElementById("courseList");
-      list.innerHTML = "";
-      courses.forEach(course => {
-        const card = document.createElement("article");
-        card.className = "course-card";
-        card.innerHTML = `<h2>${course.title}</h2><div class="course-meta">${course.date}<br>${course.summary}</div><button class="primary">开始练习</button>`;
-        card.querySelector("button").onclick = () => openCourse(course.id);
-        list.appendChild(card);
+      const schoolList = document.getElementById("schoolCourseList");
+      const hclList = document.getElementById("hclCourseList");
+      schoolList.innerHTML = "";
+      hclList.innerHTML = "";
+      [...courses].sort((a, b) => String(a.date || a.title).localeCompare(String(b.date || b.title))).forEach(course => {
+        const type = getCourseType(course);
+        if (type.hasSchool) schoolList.appendChild(createCourseCard(course, "school-card", "练学校听写", "schoolWritingPanel"));
+        if (type.hasHclDictation || type.hasHclPractice) {
+          hclList.appendChild(createCourseCard(course, "hcl-card", type.hasHclPractice ? "做 HCL 练习" : "练 HCL 听写", type.hasHclPractice ? "hclPracticePanel" : "hclWritingPanel"));
+        }
       });
+      if (!schoolList.children.length) schoolList.innerHTML = `<div class="practice-card note">还没有学校听写。</div>`;
+      if (!hclList.children.length) hclList.innerHTML = `<div class="practice-card note">还没有 HCL 内容。</div>`;
       renderGarage();
       renderWrongBook();
+    }
+    function createCourseCard(course, style, buttonText, panelId) {
+      const card = document.createElement("article");
+      card.className = `course-card ${style}`;
+      card.innerHTML = `<h2>${course.title}</h2><div class="course-meta">${course.date}<br>${course.summary}</div><button class="primary">${buttonText}</button>`;
+      card.querySelector("button").onclick = () => openCourse(course.id, panelId);
+      return card;
+    }
+    function getCourseType(course) {
+      const groups = course.dictationGroups || [
+        { kind: "school", items: course.sentences || [] },
+        { kind: "hcl", items: course.words || [] }
+      ];
+      const hasSchool = groups.some(group => (group.kind === "school" || String(group.title || "").includes("学校")) && (group.items || []).length);
+      const hasHclDictation = groups.some(group => (group.kind === "hcl" || String(group.title || "").includes("HCL")) && (group.items || []).length);
+      const hasHclPractice = !!((course.mcq || []).length || (course.match || []).length || (course.order || []).length || (course.clozeAnswers || []).length);
+      return { hasSchool, hasHclDictation, hasHclPractice };
+    }
+    function getCourseCardStyle(course) {
+      const { hasSchool, hasHclDictation, hasHclPractice } = getCourseType(course);
+      if (hasSchool && !hasHclDictation && !hasHclPractice) return "school-card";
+      if (!hasSchool && (hasHclDictation || hasHclPractice)) return "hcl-card";
+      return "mixed-card";
     }
     function renderGarage() {
       const garage = JSON.parse(localStorage.getItem("jidamGarage") || "[]");
@@ -1272,7 +1608,7 @@
       renderCloze();
       updateScore();
     }
-    function openCourse(id) {
+    function openCourse(id, preferredPanel = "schoolWritingPanel") {
       currentCourse = courses.find(c => c.id === id);
       done = new Set();
       right = 0;
@@ -1285,7 +1621,7 @@
       document.getElementById("resultBox").style.display = "none";
       document.getElementById("homeView").classList.remove("active");
       document.getElementById("courseView").classList.add("active");
-      setActivePanel("schoolWritingPanel");
+      setActivePanel(preferredPanel);
       setActivePractice("mcqSection");
       renderWriting();
       renderQuestions("mcqList", currentCourse.mcq, "m", "选择正确的字。");
@@ -1781,6 +2117,17 @@
       document.getElementById("pageSub").textContent = "每周课程复习";
       renderGarage();
     };
+    function setActiveHomePanel(panelId) {
+      document.querySelectorAll("#homeView .home-tab").forEach(tab => {
+        tab.classList.toggle("active", tab.dataset.home === panelId);
+      });
+      document.querySelectorAll("#homeView .home-panel").forEach(panel => {
+        panel.classList.toggle("active", panel.id === panelId);
+      });
+    }
+    document.querySelectorAll("#homeView .home-tab").forEach(tab => {
+      tab.onclick = () => setActiveHomePanel(tab.dataset.home);
+    });
     function setActivePanel(panelId) {
       const courseView = document.getElementById("courseView");
       courseView.querySelectorAll(".tab").forEach(t => {
