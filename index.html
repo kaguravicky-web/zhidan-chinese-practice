@@ -470,6 +470,12 @@
       border-radius: 6px;
       padding: 8px 10px;
     }
+    .answer-english {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 800;
+    }
     .answer-line:empty { display: none; }
     .tutor-box {
       grid-column: 1 / -1;
@@ -663,7 +669,7 @@
         </section>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-07-17-7</div>
+      <div class="version">v2026-07-17-8</div>
     </section>
   </main>
 
@@ -1517,6 +1523,52 @@
     function escapeHTML(value) {
       return String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
     }
+    const ANSWER_TRANSLATIONS = {
+      "草丛杂乱": "the grass patch is messy",
+      "躲进山洞": "hide inside the cave",
+      "建造小桥": "build a small bridge",
+      "沿着海边": "walk along the seaside",
+      "四处寻找": "look around everywhere",
+      "爬上山顶": "climb up to the mountain top",
+      "因为四处乱画会破坏环境，所以四处乱画是不对的。": "Because scribbling everywhere damages the environment, scribbling everywhere is wrong.",
+      "如果大家购物时都用环保袋，就能为环保尽一份力。": "If everyone uses reusable bags when shopping, we can do our part for the environment.",
+      "只要我们认真听老师讲课，就能学会折纸。": "As long as we listen carefully to the teacher, we can learn paper folding.",
+      "虽然我没有得到第一名，但是我仍然很开心。": "Although I did not get first place, I am still very happy.",
+      "我不但喜欢画画，还喜欢写字。": "I not only like drawing, but also like writing.",
+      "国旗上有五颗星星和弯弯的月亮。": "There are five stars and a curved moon on the national flag.",
+      "动物园里可爱的袋鼠妈妈把宝宝装进胸前的袋子里。": "In the zoo, the cute mother kangaroo puts her baby into the pouch in front of her chest.",
+      "周末，我们在剧院听了一场音乐会。": "On the weekend, we listened to a concert at the theatre.",
+      "因为小明考到第一名，所以他的心里很开心。": "Because Xiao Ming got first place, he felt very happy.",
+      "妈妈走进厨房，弟弟便转身溜出去玩。": "When Mum walked into the kitchen, younger brother turned around and slipped out to play."
+    };
+    function englishForAnswer(text) {
+      const value = String(text || "").trim();
+      if (!value) return "";
+      if (ANSWER_TRANSLATIONS[value]) return ANSWER_TRANSLATIONS[value];
+      const cleaned = value
+        .replace(/^第\d+题正确答案：/, "")
+        .replace(/^\d+\.\s*/gm, "")
+        .replace(/[，。！？：“”"、（）()]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (ANSWER_TRANSLATIONS[cleaned]) return ANSWER_TRANSLATIONS[cleaned];
+      const words = Object.keys(VOCAB_HELP)
+        .filter(word => cleaned.includes(word))
+        .sort((a, b) => b.length - a.length);
+      const used = [];
+      let covered = cleaned;
+      words.forEach(word => {
+        if (covered.includes(word)) {
+          used.push(VOCAB_HELP[word][2]);
+          covered = covered.replaceAll(word, " ");
+        }
+      });
+      return used.length ? [...new Set(used)].join(" + ") : "";
+    }
+    function answerHTML(label, answerText) {
+      const english = englishForAnswer(answerText);
+      return `<div>${escapeHTML(label)}${escapeHTML(answerText)}</div>${english ? `<div class="answer-english">English: ${escapeHTML(english)}</div>` : ""}`;
+    }
     function escapeRegex(value) {
       return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     }
@@ -2070,7 +2122,8 @@
           options.children[ans].classList.add("good");
           submit.disabled = true;
           submit.textContent = "已确认";
-          answerLine.textContent = q.includes("____") ? `第${i + 1}题正确答案：${q.replace("____", opts[ans])}` : `第${i + 1}题正确答案：${opts[ans]}`;
+          const answerText = q.includes("____") ? q.replace("____", opts[ans]) : opts[ans];
+          answerLine.innerHTML = answerHTML(`第${i + 1}题正确答案：`, answerText);
           if (isRight && meta?.key) {
             removeWrong(meta.key);
             setTutor(tutorBox, {
@@ -2195,7 +2248,7 @@
           row.classList.toggle("good", isRight);
           row.classList.toggle("bad", !isRight);
           if (isRight) {
-            answerLine.textContent = item.finalText || picked.map(index => item.parts[index]).join("");
+            answerLine.innerHTML = answerHTML("正确答案：", item.finalText || picked.map(index => item.parts[index]).join(""));
             markPickedWords();
             setTutor(tutorBox, {
               en: "Good. The sentence order is right.",
@@ -2209,7 +2262,7 @@
           } else {
             const tutor = tutorForWordOrder(item);
             markPickedWords();
-            answerLine.innerHTML = `<div>正确答案：${escapeHTML(item.finalText)}</div><button class="ghost retry-order">再试一次</button>`;
+            answerLine.innerHTML = `${answerHTML("正确答案：", item.finalText)}<button class="ghost retry-order">再试一次</button>`;
             answerLine.querySelector(".retry-order").onclick = reset;
             setTutor(tutorBox, tutor);
             recordWrong({
@@ -2225,7 +2278,7 @@
         };
         giveUp.onclick = () => {
           if (done.has("o" + i)) return;
-          answerLine.textContent = item.finalText;
+          answerLine.innerHTML = answerHTML("正确答案：", item.finalText);
           setTutor(tutorBox, tutorForWordOrder(item));
           [...bank.children].forEach(x => x.disabled = true);
           pickedLine.querySelectorAll("button").forEach(x => x.disabled = true);
@@ -2343,7 +2396,7 @@
       showAnswer.textContent = "我放弃，看答案";
       showAnswer.onclick = () => {
         if (done.has("o" + index)) return;
-        answerLine.textContent = item.finalText;
+        answerLine.innerHTML = answerHTML("正确答案：", item.finalText);
         setTutor(tutorBox, {
           en: "Read the answer once. Try it again later.",
           zh: "读一遍答案。下次再从错题本练。"
