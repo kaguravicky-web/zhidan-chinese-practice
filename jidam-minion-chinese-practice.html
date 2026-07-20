@@ -629,7 +629,7 @@
         <button class="ghost" id="backHome">← 返回课程主页</button>
         <span class="note">先朗读听写清单，再完成课堂练习。</span>
       </div>
-      <nav class="tabs">
+      <nav class="tabs course-tabs" hidden>
         <button class="tab active" data-panel="schoolWritingPanel">学校听写</button>
         <button class="tab" data-panel="hclWritingPanel">HCL 听写</button>
         <button class="tab" data-panel="hclPracticePanel">HCL 作业练习</button>
@@ -669,7 +669,7 @@
         </section>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-07-17-8</div>
+      <div class="version">v2026-07-20-1</div>
     </section>
   </main>
 
@@ -2494,9 +2494,17 @@
       courseView.querySelectorAll(".tab").forEach(t => {
         t.classList.toggle("active", t.dataset.panel === panelId);
       });
-      courseView.querySelectorAll(".panel").forEach(p => {
-        p.classList.toggle("active", p.id === panelId);
-      });
+      const groups = getDictationGroups();
+      const hasHclWriting = groups.some(group => group.kind === "hcl" && (group.items || []).length);
+      const hasHclPractice = !!((currentCourse?.mcq || []).length || (currentCourse?.match || []).length || (currentCourse?.order || []).length || (currentCourse?.clozeAnswers || []).length);
+      courseView.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      if (panelId === "schoolWritingPanel") {
+        document.getElementById("schoolWritingPanel").classList.add("active");
+        return;
+      }
+      if (hasHclWriting) document.getElementById("hclWritingPanel").classList.add("active");
+      if (hasHclPractice) document.getElementById("hclPracticePanel").classList.add("active");
+      if (!hasHclWriting && !hasHclPractice) document.getElementById("hclWritingPanel").classList.add("active");
     }
     function setActivePractice(sectionId) {
       const panel = document.getElementById("hclPracticePanel");
