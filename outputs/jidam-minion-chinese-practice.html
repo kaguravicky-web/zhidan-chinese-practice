@@ -248,6 +248,7 @@
       flex-wrap: wrap;
     }
     .tabs, .subtabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; }
+    .tabs .tab[hidden] { display: none; }
     .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
     .tab[data-panel="schoolWritingPanel"].active {
       background: var(--school);
@@ -629,6 +630,11 @@
         <button class="ghost" id="backHome">← 返回课程主页</button>
         <span class="note">先朗读听写清单，再完成课堂练习。</span>
       </div>
+      <nav class="tabs" id="courseTabs">
+        <button class="tab" data-panel="schoolWritingPanel">学校听写</button>
+        <button class="tab" data-panel="hclWritingPanel">HCL 听写</button>
+        <button class="tab" data-panel="hclPracticePanel">作业练习</button>
+      </nav>
       <section class="panel active" id="schoolWritingPanel">
         <h2>学校听写</h2>
         <p class="note">学校部分只有听写，用声音练默写。</p>
@@ -664,7 +670,7 @@
         </section>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-08-04-1</div>
+      <div class="version">v2026-08-05-1</div>
     </section>
   </main>
 
@@ -2854,20 +2860,26 @@
     });
     function setActivePanel(panelId) {
       const courseView = document.getElementById("courseView");
-      courseView.querySelectorAll(".tab").forEach(t => {
-        t.classList.toggle("active", t.dataset.panel === panelId);
-      });
       const groups = getDictationGroups();
+      const hasSchool = groups.some(group => group.kind === "school" && (group.items || []).length);
       const hasHclWriting = groups.some(group => group.kind === "hcl" && (group.items || []).length);
       const hasHclPractice = !!((currentCourse?.mcq || []).length || (currentCourse?.match || []).length || (currentCourse?.order || []).length || (currentCourse?.clozeAnswers || []).length);
-      courseView.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-      if (panelId === "schoolWritingPanel") {
-        document.getElementById("schoolWritingPanel").classList.add("active");
-        return;
+      const available = {
+        schoolWritingPanel: hasSchool,
+        hclWritingPanel: hasHclWriting,
+        hclPracticePanel: hasHclPractice
+      };
+      let selectedPanel = available[panelId] ? panelId : "";
+      if (!selectedPanel) {
+        selectedPanel = hasHclPractice ? "hclPracticePanel" : hasHclWriting ? "hclWritingPanel" : hasSchool ? "schoolWritingPanel" : "hclWritingPanel";
       }
-      if (hasHclWriting) document.getElementById("hclWritingPanel").classList.add("active");
-      if (hasHclPractice) document.getElementById("hclPracticePanel").classList.add("active");
-      if (!hasHclWriting && !hasHclPractice) document.getElementById("hclWritingPanel").classList.add("active");
+      courseView.querySelectorAll("#courseTabs .tab").forEach(t => {
+        const isAvailable = !!available[t.dataset.panel];
+        t.hidden = !isAvailable;
+        t.classList.toggle("active", t.dataset.panel === selectedPanel);
+      });
+      courseView.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      document.getElementById(selectedPanel).classList.add("active");
     }
     function setActivePractice(sectionId) {
       const panel = document.getElementById("hclPracticePanel");
