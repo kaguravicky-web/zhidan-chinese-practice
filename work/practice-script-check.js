@@ -19,7 +19,8 @@ const version = (html.match(/v2026-[0-9-]+/) || [])[0] || "unknown";
 const requiredCourseIds = [
   "hcl-week24-lesson-11",
   "hcl-week27-lesson-13",
-  "hcl-week28-lesson-14"
+  "hcl-week28-lesson-14",
+  "hcl-week29-lesson-15"
 ];
 const missingCourses = requiredCourseIds.filter(id => !html.includes(id));
 
