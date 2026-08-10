@@ -565,6 +565,73 @@
     .sequence-row.picked .seq-num { background: var(--blue); border-color: var(--blue); color: #fff; }
     .sequence-row.good .seq-num { background: var(--ok); border-color: var(--ok); color: #fff; }
     .sequence-row.bad .seq-num { background: var(--bad); border-color: var(--bad); color: #fff; }
+    .insert-card {
+      grid-column: 1 / -1;
+      display: grid;
+      gap: 10px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .insert-origin {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: baseline;
+      padding: 9px 11px;
+      border-radius: 8px;
+      background: #f2f7fc;
+      font-size: 19px;
+      line-height: 1.6;
+    }
+    .insert-label {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .insert-todo { color: var(--muted); font-size: 16px; font-weight: 800; }
+    .insert-todo b { color: var(--blue-dark); font-size: 20px; }
+    .insert-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      align-items: center;
+      font-size: 20px;
+      line-height: 2;
+    }
+    .insert-gap {
+      min-width: 34px;
+      min-height: 34px;
+      padding: 0 6px;
+      border: 1px dashed var(--blue);
+      border-radius: 8px;
+      background: #f4faff;
+      color: var(--blue);
+      font: inherit;
+      font-size: 17px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .insert-gap:hover:not(:disabled) { background: #dbeafe; }
+    .insert-gap:disabled { border-style: dotted; color: #b8c7d6; cursor: default; }
+    .insert-word {
+      min-height: 34px;
+      padding: 2px 10px;
+      border: 1px solid var(--blue);
+      border-radius: 8px;
+      background: var(--blue);
+      color: #fff;
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .insert-card.good .insert-word { background: var(--ok); border-color: var(--ok); }
+    .insert-card.bad .insert-word { background: var(--bad); border-color: var(--bad); }
+    .insert-chunk { padding: 0 1px; }
     .speech-dock {
       position: fixed;
       z-index: 40;
@@ -1747,51 +1814,63 @@
           finalText: "1. 长颈鹿经常帮助别人。 2. 大家很感谢长颈鹿，就做了一个花环送给它。 3. 但长颈鹿长得太高了，怎样才能把花环戴在它的脖子上呢？ 4. 于是，猴子想出了个办法，它跳到大象的背上。 5. 这时，站在大象背上的猴子，变得比谁都高。 6. 猴子一伸出手，很快就把花环戴在长颈鹿的脖子上。"
         },
         {
-          prompt: "扩写句子：各种各样的（原句：那间书店卖玩具，我们有空去看看。）",
-          type: "words",
-          guide: "“各种各样的”是形容玩具的，要放在“玩具”前面。",
-          parts: ["那间书店", "卖", "各种各样的", "玩具", "我们有空去看看"],
-          answer: [0, 1, 2, 3, 4],
+          prompt: "扩写句子：把“各种各样的”加进原句里。",
+          type: "insert",
+          guide: "“各种各样的”是在说玩具有很多种，所以要放在“玩具”前面。",
+          insertTip: "“各种各样的”是形容东西的，要贴在那样东西前面。",
+          origin: "那间书店卖玩具，我们有空去看看。",
+          chunks: ["那间书店", "卖", "玩具", "，我们有空去看看。"],
+          inserts: [{ word: "各种各样的", gap: 2 }],
           finalText: "那间书店卖各种各样的玩具，我们有空去看看。"
         },
         {
-          prompt: "扩写句子：果然（原句：天气预报显示今天会下雨，傍晚时分下起了雨。）",
-          type: "words",
-          guide: "“果然”表示事情跟预料的一样，放在动作前面。",
-          parts: ["天气预报显示今天会下雨", "傍晚时分", "果然", "下起了雨"],
-          answer: [0, 1, 2, 3],
+          prompt: "扩写句子：把“果然”加进原句里。",
+          type: "insert",
+          guide: "“果然”＝真的跟猜的一样。前面说“预报会下雨”，后面真的下了，所以“果然”要放在“下起了雨”前面。",
+          insertTip: "“果然”是说“真的跟前面讲的一样”，要放在真的发生的那件事前面。",
+          origin: "天气预报显示今天会下雨，傍晚时分下起了雨。",
+          chunks: ["天气预报显示今天会下雨，", "傍晚时分", "下起了雨。"],
+          inserts: [{ word: "果然", gap: 2 }],
           finalText: "天气预报显示今天会下雨，傍晚时分果然下起了雨。"
         },
         {
-          prompt: "扩写句子：不停地（原句：小光往花盆里浇水，叶子都弄湿了。）",
-          type: "words",
-          guide: "“不停地”是说怎样浇水，要放在“往花盆里浇水”前面。",
-          parts: ["小光", "不停地", "往花盆里", "浇水", "叶子都弄湿了"],
-          answer: [0, 1, 2, 3, 4],
+          prompt: "扩写句子：把“不停地”加进原句里。",
+          type: "insert",
+          guide: "“不停地”是说他怎样浇水，要放在“往花盆里浇水”前面。",
+          insertTip: "“……地”是说动作怎么做的，要放在动作前面。",
+          origin: "小光往花盆里浇水，叶子都弄湿了。",
+          chunks: ["小光", "往花盆里浇水", "，叶子都弄湿了。"],
+          inserts: [{ word: "不停地", gap: 1 }],
           finalText: "小光不停地往花盆里浇水，叶子都弄湿了。"
         },
         {
-          prompt: "扩写句子：不但……而且……（原句：我买的这个手机很漂亮。我买的这个手机很好用。）",
-          type: "words",
-          guide: "两个优点合起来说：不但……而且……。",
-          parts: ["我买的这个手机", "不但", "很漂亮", "而且", "很好用"],
-          answer: [0, 1, 2, 3, 4],
+          prompt: "扩写句子：把“不但”和“而且”加进原句里。（先放“不但”，再放“而且”）",
+          type: "insert",
+          guide: "两个好处合起来说：不但（第一个好处），而且（第二个好处）。",
+          insertTip: "“不但”放第一个好处前面，“而且”放第二个好处前面。",
+          origin: "我买的这个手机很漂亮。我买的这个手机很好用。",
+          chunks: ["我买的这个手机", "很漂亮", "，", "很好用。"],
+          inserts: [{ word: "不但", gap: 1 }, { word: "而且", gap: 3 }],
           finalText: "我买的这个手机不但很漂亮，而且很好用。"
         },
         {
-          prompt: "扩写句子：或者（原句：你可以去公园踢球。你可以去海边散步。）",
-          type: "words",
-          guide: "“或者”表示两件事选一件。",
-          parts: ["你可以", "去公园踢球", "或者", "去海边散步"],
-          answer: [0, 1, 2, 3],
+          prompt: "扩写句子：把“或者”加进原句里。",
+          type: "insert",
+          guide: "“或者”＝两件事选一件，要放在第二件事前面。",
+          insertTip: "“或者”是给人选的，放在第二个选择前面。",
+          origin: "你可以去公园踢球。你可以去海边散步。",
+          chunks: ["你可以", "去公园踢球", "，", "去海边散步。"],
+          inserts: [{ word: "或者", gap: 3 }],
           finalText: "你可以去公园踢球，或者去海边散步。"
         },
         {
-          prompt: "扩写句子：但……（原句：我们是最后一名。我们仍然很开心。）",
-          type: "words",
-          guide: "前面说结果不好，后面用“但”说心情还是好的。",
-          parts: ["我们是最后一名", "但", "我们仍然", "很开心"],
-          answer: [0, 1, 2, 3],
+          prompt: "扩写句子：把“但”加进原句里。",
+          type: "insert",
+          guide: "前面说结果不好，“但”后面说心情还是好的，所以“但”放在第二句前面。",
+          insertTip: "“但”是转弯的词，放在跟前面不一样的那句前面。",
+          origin: "我们是最后一名。我们仍然很开心。",
+          chunks: ["我们是最后一名", "，", "我们仍然很开心。"],
+          inserts: [{ word: "但", gap: 2 }],
           finalText: "我们是最后一名，但我们仍然很开心。"
         }
       ],
@@ -2094,7 +2173,16 @@
       "品尝": ["pǐn cháng", "慢慢地尝一尝味道。", "taste; savour"],
       "伸出": ["shēn chū", "把手或脚往外面伸。", "stretch out"],
       "住家": ["zhù jiā", "人住的家，家里。", "home; household"],
-      "走进": ["zǒu jìn", "走到里面去。", "walk into"]
+      "走进": ["zǒu jìn", "走到里面去。", "walk into"],
+      "果然": ["guǒ rán", "真的跟前面说的一样。例：妈妈说会下雨，下午果然下雨了。", "sure enough; just as expected"],
+      "不停地": ["bù tíng de", "一直做，没有停下来。例：他不停地浇水。", "keep on doing; without stopping"],
+      "各种各样": ["gè zhǒng gè yàng", "很多不同的种类。例：书店里有各种各样的玩具。", "all kinds of"],
+      "而且": ["ér qiě", "跟“不但”一起用，再加上一个好处。例：不但漂亮，而且好用。", "moreover; and also"],
+      "或者": ["huò zhě", "两件事选一件。例：去踢球，或者去散步。", "or; either ... or"],
+      "突然": ["tū rán", "很快就发生，没想到。", "suddenly"],
+      "傍晚": ["bàng wǎn", "天快黑的时候。", "toward evening; dusk"],
+      "天气预报": ["tiān qì yù bào", "告诉大家明天会不会下雨、热不热。", "weather forecast"],
+      "花盆": ["huā pén", "种花用的盆子。", "flowerpot"]
     };
 
     const audioCtx = () => new (window.AudioContext || window.webkitAudioContext)();
@@ -2850,9 +2938,22 @@
         if (item.guide) {
           row.querySelector(".qtext").insertAdjacentHTML("afterend", `<div class="guide-tip">提示：${escapeHTML(item.guide)}</div>`);
         }
-        addVocabStrip(row, [item.prompt, item.fixed, ...(item.lines || []).map(line => line.text), ...(item.parts || [])]);
+        addVocabStrip(row, [
+          item.prompt,
+          item.fixed,
+          item.origin,
+          ...(item.lines || []).map(line => line.text),
+          ...(item.parts || []),
+          ...(item.chunks || []),
+          ...(item.inserts || []).map(x => x.word)
+        ].filter(Boolean));
         if (item.type === "sequence") {
           renderSequenceOrder(row, item, i);
+          list.appendChild(row);
+          return;
+        }
+        if (item.type === "insert") {
+          renderInsertOrder(row, item, i);
           list.appendChild(row);
           return;
         }
@@ -2995,6 +3096,184 @@
         refresh();
         list.appendChild(row);
       });
+    }
+    function renderInsertOrder(row, item, index) {
+      const answerLine = row.querySelector(".answer-line");
+      const tutorBox = row.querySelector(".tutor-box");
+      const options = row.querySelector(".options");
+      const bank = row.querySelector(".word-bank");
+      row.querySelector(".speak").onclick = () => speak(item.origin);
+      options.innerHTML = "";
+      bank.className = "insert-card";
+      bank.insertAdjacentElement("afterend", answerLine);
+      answerLine.insertAdjacentElement("afterend", tutorBox);
+
+      const originBox = document.createElement("div");
+      originBox.className = "insert-origin";
+      originBox.innerHTML = `<span class="insert-label">原句</span><span>${annotateText(item.origin)}</span>`;
+      bank.appendChild(originBox);
+
+      const todo = document.createElement("div");
+      todo.className = "insert-todo";
+      bank.appendChild(todo);
+
+      const line = document.createElement("div");
+      line.className = "insert-line";
+      bank.appendChild(line);
+
+      const placed = item.inserts.map(() => null);
+      const gapCount = item.chunks.length + 1;
+      function nextToPlace() {
+        return placed.findIndex(value => value === null);
+      }
+      function wordAtGap(gap) {
+        return placed.findIndex(value => value === gap);
+      }
+      function clearMarks() {
+        row.classList.remove("good", "bad");
+        bank.classList.remove("good", "bad");
+        answerLine.textContent = "";
+        tutorBox.innerHTML = "";
+      }
+      function refresh() {
+        const pending = nextToPlace();
+        const finished = done.has("o" + index);
+        todo.innerHTML = finished
+          ? "这一题做完了，读一遍整句。"
+          : pending < 0
+            ? "都放好了，按“确认句子”看看对不对。"
+            : `现在要放的词语：<b>${escapeHTML(item.inserts[pending].word)}</b>　（点句子里的 ＋ 放进去）`;
+        line.innerHTML = "";
+        for (let gap = 0; gap < gapCount; gap += 1) {
+          const wordIndex = wordAtGap(gap);
+          if (wordIndex >= 0) {
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "insert-word";
+            chip.textContent = item.inserts[wordIndex].word;
+            chip.title = "点我拿回这个词";
+            chip.onclick = () => {
+              if (done.has("o" + index)) return;
+              placed[wordIndex] = null;
+              clearMarks();
+              refresh();
+            };
+            line.appendChild(chip);
+          } else if (!finished) {
+            const slot = document.createElement("button");
+            slot.type = "button";
+            slot.className = "insert-gap";
+            slot.textContent = "＋";
+            slot.title = "把词语放这里";
+            slot.disabled = pending < 0;
+            slot.onclick = () => {
+              if (done.has("o" + index)) return;
+              const target = nextToPlace();
+              if (target < 0) return;
+              placed[target] = gap;
+              clearMarks();
+              refresh();
+            };
+            line.appendChild(slot);
+          }
+          if (gap < item.chunks.length) {
+            const chunk = document.createElement("span");
+            chunk.className = "insert-chunk";
+            chunk.innerHTML = annotateText(item.chunks[gap]);
+            line.appendChild(chunk);
+          }
+        }
+        checkButton.disabled = nextToPlace() >= 0 || done.has("o" + index);
+      }
+      function resetInsert() {
+        placed.fill(null);
+        clearMarks();
+        refresh();
+      }
+      const checkButton = document.createElement("button");
+      checkButton.className = "primary";
+      checkButton.textContent = "确认句子";
+      checkButton.disabled = true;
+      checkButton.onclick = () => {
+        if (done.has("o" + index) || nextToPlace() >= 0) return;
+        const isRight = item.inserts.every((insert, k) => placed[k] === insert.gap);
+        row.classList.toggle("good", isRight);
+        row.classList.toggle("bad", !isRight);
+        bank.classList.toggle("good", isRight);
+        bank.classList.toggle("bad", !isRight);
+        if (isRight) {
+          answerLine.innerHTML = answerHTML("正确答案：", item.finalText);
+          setTutor(tutorBox, tutorForInsert(item, true));
+          checkButton.disabled = true;
+          checkButton.textContent = "已确认";
+          resetButton.disabled = true;
+          showAnswer.disabled = true;
+          if (item.wrongKey) removeWrong(item.wrongKey);
+          markQuestion("o" + index, true);
+          refresh();
+        } else {
+          const tutor = tutorForInsert(item, false);
+          answerLine.innerHTML = `${answerHTML("正确答案：", item.finalText)}<button class="ghost retry-order">再试一次</button>`;
+          answerLine.querySelector(".retry-order").onclick = resetInsert;
+          setTutor(tutorBox, tutor);
+          recordWrong({
+            key: item.wrongKey || makeQuestionKey("order", item.prompt, item.finalText),
+            kind: "order",
+            item,
+            prompt: item.prompt,
+            finalText: item.finalText,
+            tutor
+          });
+          funnyWrongSound();
+        }
+      };
+      const resetButton = document.createElement("button");
+      resetButton.className = "ghost";
+      resetButton.textContent = "重新放";
+      resetButton.onclick = () => {
+        if (done.has("o" + index)) return;
+        resetInsert();
+      };
+      const showAnswer = document.createElement("button");
+      showAnswer.className = "ghost";
+      showAnswer.textContent = "我放弃，看答案";
+      showAnswer.onclick = () => {
+        if (done.has("o" + index)) return;
+        item.inserts.forEach((insert, k) => { placed[k] = insert.gap; });
+        answerLine.innerHTML = answerHTML("正确答案：", item.finalText);
+        setTutor(tutorBox, tutorForInsert(item, false));
+        checkButton.disabled = true;
+        resetButton.disabled = true;
+        showAnswer.disabled = true;
+        recordWrong({
+          key: item.wrongKey || makeQuestionKey("order", item.prompt, item.finalText),
+          kind: "order",
+          item,
+          prompt: item.prompt,
+          finalText: item.finalText,
+          tutor: tutorForInsert(item, false)
+        });
+        markQuestion("o" + index, false);
+        refresh();
+      };
+      options.classList.add("order-actions");
+      options.appendChild(checkButton);
+      options.appendChild(resetButton);
+      options.appendChild(showAnswer);
+      refresh();
+    }
+    function tutorForInsert(item, isRight) {
+      const words = item.inserts.map(x => x.word).join("、");
+      if (isRight) {
+        return {
+          en: "Good. The added words are in the right place.",
+          zh: `很好。“${words}”放对位置了。整句是：${item.finalText}`
+        };
+      }
+      return {
+        en: "Read the original sentence first, then find the word the new words describe.",
+        zh: `${item.insertTip || `先把原句读一遍，再想“${words}”是在说哪一个词。`}正确的整句是：${item.finalText}`
+      };
     }
     function renderSequenceOrder(row, item, index) {
       const answerLine = row.querySelector(".answer-line");
