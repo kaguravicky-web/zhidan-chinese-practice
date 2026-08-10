@@ -21,6 +21,13 @@
       --ok: #1f8a50;
       --bad: #c94b42;
       --grid: #d9b957;
+      --hint-bg: #fffbe6;
+      --hint-line: #f3dd97;
+      --hint-bar: #e3b93b;
+      --hint-ink: #6b5210;
+      --hint-ink-soft: #8a7233;
+      --hint-size: 16px;
+      --hint-size-small: 14px;
     }
     * { box-sizing: border-box; }
     body {
@@ -266,12 +273,13 @@
     .note { color: var(--muted); font-weight: 700; }
     .guide-tip {
       margin: 8px 0 10px;
-      padding: 9px 11px;
-      border: 1px solid #bfdbfe;
+      padding: 8px 10px;
+      border: 1px solid var(--hint-line);
       border-radius: 8px;
-      background: #eff6ff;
-      color: var(--blue-dark);
-      font-weight: 800;
+      background: var(--hint-bg);
+      color: var(--hint-ink);
+      font-size: var(--hint-size);
+      font-weight: 700;
       line-height: 1.45;
     }
     .practice-list { display: grid; gap: 14px; }
@@ -396,7 +404,7 @@
     }
     .question {
       display: grid;
-      grid-template-columns: auto 1fr;
+      grid-template-columns: 1fr auto;
       gap: 8px 12px;
       padding: 14px;
       margin: 12px 0;
@@ -404,7 +412,10 @@
       border-radius: 8px;
       background: #fff;
     }
-    .qtext { font-size: 20px; line-height: 1.55; }
+    .question > * { grid-column: 1 / -1; }
+    .question > .qtext { grid-column: 1; grid-row: 1; }
+    .question > .speak { grid-column: 2; grid-row: 1; justify-self: end; align-self: start; }
+    .qtext { font-size: 20px; font-weight: 700; line-height: 1.55; }
     .vocab-help {
       min-height: 0;
       padding: 0 2px;
@@ -463,29 +474,32 @@
     .option { text-align: left; min-height: 46px; }
     .answer-line {
       grid-column: 1 / -1;
-      min-height: 24px;
-      font-weight: 800;
-      color: var(--blue-dark);
-      background: #eef7ff;
-      border-left: 4px solid var(--blue);
+      min-height: 22px;
+      font-size: var(--hint-size);
+      font-weight: 700;
+      color: var(--hint-ink);
+      background: var(--hint-bg);
+      border-left: 4px solid var(--hint-bar);
       border-radius: 6px;
       padding: 8px 10px;
     }
     .answer-english {
       margin-top: 5px;
-      color: var(--muted);
-      font-size: 15px;
-      font-weight: 800;
+      color: var(--hint-ink-soft);
+      font-size: var(--hint-size-small);
+      font-weight: 700;
     }
     .answer-line:empty { display: none; }
     .tutor-box {
       grid-column: 1 / -1;
-      border: 1px solid #c9ddf3;
+      border: 1px solid var(--hint-line);
       border-radius: 8px;
-      background: #f4f9ff;
-      padding: 10px 12px;
-      color: var(--blue-dark);
-      line-height: 1.55;
+      background: var(--hint-bg);
+      padding: 9px 11px;
+      color: var(--hint-ink);
+      font-size: var(--hint-size);
+      font-weight: 700;
+      line-height: 1.5;
     }
     .tutor-box:empty { display: none; }
     .tutor-title { font-weight: 900; margin-bottom: 4px; }
@@ -529,16 +543,63 @@
     .sequence-row.fixed { background: #eef7ff; font-weight: 800; }
     .sequence-row.good { background: #eaf8ef; }
     .sequence-row.bad { background: #fff0ef; }
-    .sequence-input {
+    .sequence-row.tappable { cursor: pointer; }
+    .sequence-row.tappable:hover { background: #e8f2fd; }
+    .sequence-row.picked { background: #eaf4ff; }
+    .sequence-row.picked.good { background: #eaf8ef; }
+    .sequence-row.picked.bad { background: #fff0ef; }
+    .seq-num {
       width: 46px;
-      padding: 6px;
+      min-height: 40px;
+      padding: 4px;
       border: 1px solid #bfd0e2;
       border-radius: 8px;
+      background: #fff;
       font: inherit;
+      font-size: 20px;
       font-weight: 900;
       text-align: center;
       color: var(--blue-dark);
     }
+    .seq-num.empty { color: #9fb3c8; }
+    .sequence-row.picked .seq-num { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .sequence-row.good .seq-num { background: var(--ok); border-color: var(--ok); color: #fff; }
+    .sequence-row.bad .seq-num { background: var(--bad); border-color: var(--bad); color: #fff; }
+    .speech-dock {
+      position: fixed;
+      z-index: 40;
+      top: 10px;
+      right: 12px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      padding: 6px 8px;
+      border: 1px solid var(--blue);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .96);
+      box-shadow: 0 8px 22px rgba(15, 58, 104, .18);
+    }
+    .speech-dock[hidden] { display: none; }
+    .speech-dock button { min-height: 38px; padding: 4px 12px; font-size: 15px; }
+    .speech-dock .speech-label { color: var(--blue-dark); font-size: 14px; font-weight: 800; padding-left: 4px; }
+    .back-to-top {
+      position: fixed;
+      z-index: 15;
+      right: 12px;
+      bottom: 14px;
+      min-height: 46px;
+      padding: 8px 14px;
+      border: 1px solid var(--blue);
+      border-radius: 999px;
+      background: var(--blue);
+      color: #fff;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(15, 58, 104, .22);
+    }
+    .back-to-top[hidden] { display: none; }
+    body.popover-open .back-to-top { display: none; }
     .cloze-box {
       background: #fff;
       border: 1px solid var(--line);
@@ -586,6 +647,12 @@
   </style>
 </head>
 <body>
+  <div class="speech-dock" id="speechDock" hidden>
+    <span class="speech-label">🔊 朗读中</span>
+    <button class="ghost" id="speechToggle">⏸ 暂停</button>
+    <button class="ghost" id="speechStop">⏹ 停止</button>
+  </div>
+  <button class="back-to-top" id="backToTop" hidden>↑ 回到顶部</button>
   <header>
     <div class="top">
       <div>
@@ -2053,7 +2120,54 @@
       tone(260, .12, "sawtooth", .045, 0);
       tone(150, .18, "sawtooth", .04, .12);
     }
+    let speechToken = 0;
+    let speechWatch = 0;
+    function speechDockEl(id) { return document.getElementById(id); }
+    function watchSpeech() {
+      clearInterval(speechWatch);
+      const startedAt = Date.now();
+      speechWatch = setInterval(() => {
+        const synth = window.speechSynthesis;
+        if (Date.now() - startedAt < 900) return;
+        if (!synth.speaking && !synth.pending && !synth.paused) {
+          clearInterval(speechWatch);
+          setSpeechDock("off");
+        }
+      }, 500);
+    }
+    function setSpeechDock(state) {
+      const dock = speechDockEl("speechDock");
+      const toggle = speechDockEl("speechToggle");
+      if (!dock || !toggle) return;
+      if (state === "off") {
+        dock.hidden = true;
+        return;
+      }
+      dock.hidden = false;
+      toggle.textContent = state === "paused" ? "▶ 继续" : "⏸ 暂停";
+    }
+    function stopSpeaking() {
+      speechToken += 1;
+      clearInterval(speechWatch);
+      window.speechSynthesis.resume();
+      window.speechSynthesis.cancel();
+      setSpeechDock("off");
+    }
+    function toggleSpeaking() {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        setSpeechDock("playing");
+      } else if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        setSpeechDock("paused");
+      } else {
+        setSpeechDock("off");
+      }
+    }
     function speak(text, lang = "zh-CN", readPunctuation = false) {
+      speechToken += 1;
+      const myToken = speechToken;
+      window.speechSynthesis.resume();
       window.speechSynthesis.cancel();
       const spokenText = readPunctuation && lang.startsWith("zh") ? verbalizeChinesePunctuation(text) : text;
       const u = new SpeechSynthesisUtterance(spokenText);
@@ -2066,7 +2180,11 @@
       const male = voices.find(v => /zh/i.test(v.lang) && /Yunxi|Yunjian|Kangkang|Male|男|云希|云健/i.test(v.name));
       const zh = voices.find(v => /zh/i.test(v.lang));
       u.voice = selected || (lang.startsWith("en") ? en : male || zh) || null;
+      u.onend = () => { if (myToken === speechToken) setSpeechDock("off"); };
+      u.onerror = u.onend;
       window.speechSynthesis.speak(u);
+      setSpeechDock("playing");
+      watchSpeech();
     }
     function verbalizeChinesePunctuation(text) {
       return String(text)
@@ -2206,9 +2324,13 @@
         </div>
       `;
       popover.hidden = false;
+      document.body.classList.add("popover-open");
       popover.querySelector(".vocab-read-zh").onclick = () => speak(`${word}。${entry[1]}`, "zh-CN");
       popover.querySelector(".vocab-read-en").onclick = () => speak(entry[2], "en-US");
-      popover.querySelector(".vocab-close").onclick = () => { popover.hidden = true; };
+      popover.querySelector(".vocab-close").onclick = () => {
+        popover.hidden = true;
+        document.body.classList.remove("popover-open");
+      };
     }
     function getWrongBook() {
       return JSON.parse(localStorage.getItem(WRONG_KEY) || "[]");
@@ -2888,20 +3010,41 @@
       fixedRow.className = "sequence-row fixed";
       fixedRow.innerHTML = `<div>（1）</div><div>${annotateText(item.fixed)}</div>`;
       bank.appendChild(fixedRow);
+      const picked = [];
+      const lineRows = [];
+      function numberFor(lineIndex) {
+        const at = picked.indexOf(lineIndex);
+        return at < 0 ? null : item.choices[at];
+      }
+      function refreshSequence() {
+        lineRows.forEach((lineRow, lineIndex) => {
+          const value = numberFor(lineIndex);
+          const badge = lineRow.querySelector(".seq-num");
+          badge.textContent = value === null ? "？" : value;
+          badge.classList.toggle("empty", value === null);
+          lineRow.classList.toggle("picked", value !== null);
+        });
+        checkButton.disabled = picked.length !== item.lines.length || done.has("o" + index);
+      }
+      function clearMarks() {
+        row.classList.remove("good", "bad");
+        lineRows.forEach(lineRow => lineRow.classList.remove("good", "bad"));
+        answerLine.textContent = "";
+        tutorBox.innerHTML = "";
+      }
+      function resetSequence() {
+        picked.length = 0;
+        clearMarks();
+        refreshSequence();
+      }
       function checkSequence() {
         if (done.has("o" + index)) return;
-        const inputs = [...bank.querySelectorAll(".sequence-input")];
-        const values = inputs.map(input => Number(input.value));
-        if (values.some(value => !item.choices.includes(value))) {
-          answerLine.textContent = `请在每个空格填 ${item.choices.join("、")}。`;
+        if (picked.length !== item.lines.length) {
+          answerLine.textContent = `请点每一句，按先后顺序排好（${item.choices.join("、")}）。`;
           funnyWrongSound();
           return;
         }
-        if (new Set(values).size !== values.length) {
-          answerLine.textContent = "每个序号只能用一次。";
-          funnyWrongSound();
-          return;
-        }
+        const values = item.lines.map((line, lineIndex) => numberFor(lineIndex));
         const isRight = item.lines.every((line, lineIndex) => values[lineIndex] === line.answer);
         row.classList.toggle("good", isRight);
         row.classList.toggle("bad", !isRight);
@@ -2915,14 +3058,15 @@
             en: "Great. You used time order.",
             zh: "很好。你按时间顺序排对了。"
           });
-          inputs.forEach(input => input.disabled = true);
+          lineRows.forEach(lineRow => lineRow.classList.remove("tappable"));
           checkButton.disabled = true;
           checkButton.textContent = "已确认";
+          resetButton.disabled = true;
           if (item.wrongKey) removeWrong(item.wrongKey);
           markQuestion("o" + index, true);
         } else {
           const tutor = tutorForSequence(item, values);
-          answerLine.textContent = "有几句顺序不对。绿色句子保留，红色句子改数字，再试一次。";
+          answerLine.textContent = "有几句顺序不对。绿色句子已经对了，点红色的句子取消，再重新点一次。";
           setTutor(tutorBox, tutor);
           recordWrong({
             key: item.wrongKey || makeQuestionKey("order", item.prompt, item.finalText),
@@ -2935,30 +3079,45 @@
           funnyWrongSound();
         }
       }
+      const tapHint = document.createElement("div");
+      tapHint.className = "note";
+      tapHint.textContent = "点句子，按先后顺序排。点错了再点一次可以取消，也可以按“重排”。";
+      bank.appendChild(tapHint);
       item.lines.forEach((line, lineIndex) => {
         const lineRow = document.createElement("div");
-        lineRow.className = "sequence-row";
-        const input = document.createElement("input");
-        input.className = "sequence-input";
-        input.inputMode = "numeric";
-        input.maxLength = 1;
-        input.setAttribute("aria-label", `第${lineIndex + 2}句序号`);
-        input.oninput = () => {
-          const allowedNumbers = item.choices.map(String).join("");
-          input.value = input.value.replace(new RegExp(`[^${allowedNumbers}]`, "g"), "").slice(0, 1);
-          lineRow.classList.remove("good", "bad");
-          row.classList.remove("good", "bad");
-          answerLine.textContent = "";
-        };
+        lineRow.className = "sequence-row tappable";
+        const badge = document.createElement("button");
+        badge.className = "seq-num empty";
+        badge.type = "button";
+        badge.textContent = "？";
+        badge.setAttribute("aria-label", `第${lineIndex + 1}句的序号`);
         const text = document.createElement("div");
         text.innerHTML = annotateText(line.text);
-        lineRow.append(input, text);
+        lineRow.append(badge, text);
+        lineRow.onclick = event => {
+          if (done.has("o" + index)) return;
+          if (event.target.closest(".vocab-help")) return;
+          const at = picked.indexOf(lineIndex);
+          if (at >= 0) picked.splice(at, 1);
+          else if (picked.length < item.lines.length) picked.push(lineIndex);
+          clearMarks();
+          refreshSequence();
+        };
+        lineRows.push(lineRow);
         bank.appendChild(lineRow);
       });
       const checkButton = document.createElement("button");
       checkButton.className = "primary";
       checkButton.textContent = "确认顺序";
+      checkButton.disabled = true;
       checkButton.onclick = checkSequence;
+      const resetButton = document.createElement("button");
+      resetButton.className = "ghost";
+      resetButton.textContent = "重排";
+      resetButton.onclick = () => {
+        if (done.has("o" + index)) return;
+        resetSequence();
+      };
       const showAnswer = document.createElement("button");
       showAnswer.className = "ghost";
       showAnswer.textContent = "我放弃，看答案";
@@ -2969,8 +3128,9 @@
           en: "Read the answer once. Try it again later.",
           zh: "读一遍答案。下次再从错题本练。"
         });
-        bank.querySelectorAll(".sequence-input").forEach(input => input.disabled = true);
+        lineRows.forEach(lineRow => lineRow.classList.remove("tappable"));
         checkButton.disabled = true;
+        resetButton.disabled = true;
         showAnswer.disabled = true;
         recordWrong({
           key: item.wrongKey || makeQuestionKey("order", item.prompt, item.finalText),
@@ -2983,7 +3143,10 @@
         markQuestion("o" + index, false);
       };
       options.appendChild(checkButton);
+      options.appendChild(resetButton);
       options.appendChild(showAnswer);
+      options.classList.add("order-actions");
+      refreshSequence();
     }
     function renderCloze() {
       const list = document.getElementById("clozeList");
@@ -3138,6 +3301,15 @@
       document.getElementById("uploadStatus").textContent =
         "照片已准备好。请在 Codex 对话中发送这些照片，我会生成并加入下一节课。";
     };
+    document.getElementById("speechToggle").onclick = toggleSpeaking;
+    document.getElementById("speechStop").onclick = stopSpeaking;
+    const backToTop = document.getElementById("backToTop");
+    backToTop.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+    function refreshBackToTop() {
+      backToTop.hidden = window.scrollY < 320;
+    }
+    window.addEventListener("scroll", refreshBackToTop, { passive: true });
+    refreshBackToTop();
     renderVoices();
     renderHome();
   </script>
