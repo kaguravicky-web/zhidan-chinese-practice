@@ -1888,7 +1888,7 @@
       id: "hcl-week31-lesson-16",
       title: "HCL Week 31 第十六课《学习要认真》",
       date: "Week 31",
-      summary: "HCL 听写 16 项、语文应用、词语搭配、完成对话、完成句子、背诵《保持环境的清洁》。",
+      summary: "HCL 听写 16 项、语文应用、词语搭配、完成对话、完成句子。",
       dictationGroups: [{
         kind: "school",
         title: "学校听写",
@@ -1950,22 +1950,7 @@
         ["一____牛奶", ["道", "身", "头", "杯"], 3, { translation: "a glass of milk", guide: "牛奶装在杯子里。" }],
         ["一____题目", ["封", "本", "道", "条"], 2, { translation: "a question (in a test)", guide: "题目、菜、命令都用“道”。" }]
       ],
-      order: [
-        {
-          prompt: "背诵《保持环境的清洁》：按 F → O → R → IF 的顺序排好。",
-          type: "sequence",
-          guide: "F＝感受（我觉得怎样）→ O＝看法（我认为这件事对不对）→ R＝原因（为什么）→ IF＝如果是我（我会怎么做）。",
-          fixed: "看了这一幕，我感到十分高兴。（F＝感受）",
-          choices: [2, 3, 4],
-          lines: [
-            { text: "因为“保护环境，人人有责”。我们应该共同保持环境的清洁和卫生。（R＝原因）", answer: 3 },
-            { text: "如果是我，我也会像他一样，主动把垃圾捡起来扔进垃圾桶。（IF＝如果）", answer: 4 },
-            { text: "我认为小男孩捡起垃圾扔进垃圾桶是一种有公德心的行为，是值得我们学习和称赞的。（O＝看法）", answer: 2 }
-          ],
-          answer: [3, 4, 2],
-          finalText: "看了这一幕，我感到十分高兴。我认为小男孩捡起垃圾扔进垃圾桶是一种有公德心的行为，是值得我们学习和称赞的。因为“保护环境，人人有责”。我们应该共同保持环境的清洁和卫生。如果是我，我也会像他一样，主动把垃圾捡起来扔进垃圾桶。"
-        }
-      ],
+      order: [],
       clozeWords: [],
       clozeAnswers: [],
       clozeParts: ["这一课没有短文填空。"]
@@ -3044,6 +3029,13 @@
     function renderOrder() {
       const list = document.getElementById("orderList");
       list.innerHTML = "";
+      if (!(currentCourse.order || []).length) {
+        const empty = document.createElement("div");
+        empty.className = "note";
+        empty.textContent = "这一课没有排序组句。";
+        list.appendChild(empty);
+        return;
+      }
       (currentCourse.order || []).forEach((item, i) => {
         const row = document.createElement("div");
         row.className = "question";
