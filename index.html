@@ -804,7 +804,7 @@
         </section>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-10-14-1</div>
+      <div class="version">v2026-10-22-1</div>
     </section>
   </main>
 
@@ -2957,6 +2957,89 @@
       clozeWords: [],
       clozeAnswers: [],
       clozeParts: ["这一课没有短文填空。"]
+    }, {
+      id: "hcl-week40-review-all-6",
+      title: "HCL Week 40 字词总复习二（第一课~第十七课）",
+      date: "Week 40",
+      summary: "HCL 听写 12 项、组句成段两组、词语搭配 16 题、阅读理解 2 题。",
+      dictationGroups: [{
+        kind: "school",
+        title: "学校听写",
+        items: []
+      }, {
+        kind: "hcl",
+        title: "HCL 听写",
+        items: [
+          ["散步", "sàn bù"], ["强弱", "qiáng ruò"], ["钓鱼", "diào yú"], ["有始无终", "yǒu shǐ wú zhōng"],
+          ["玩耍", "wán shuǎ"], ["怀里", "huái lǐ"], ["感到", "gǎn dào"], ["半途而废", "bàn tú ér fèi"],
+          ["农夫劳动", "nóng fū láo dòng"], ["念", "niàn"], ["传", "chuán"], ["签名", "qiān míng"]
+        ]
+      }],
+      words: [
+        ["散步", "sàn bù"], ["强弱", "qiáng ruò"], ["钓鱼", "diào yú"], ["有始无终", "yǒu shǐ wú zhōng"],
+        ["玩耍", "wán shuǎ"], ["怀里", "huái lǐ"], ["感到", "gǎn dào"], ["半途而废", "bàn tú ér fèi"],
+        ["农夫劳动", "nóng fū láo dòng"], ["念", "niàn"], ["传", "chuán"], ["签名", "qiān míng"]
+      ],
+      sentences: [],
+      mcq: [
+        ["通告说：儿童花园总共花费了七百万元，其中三百万元是来自公众的捐款。植物园的“儿童花园”一共花了多少钱？", ["四百万元", "三百万元", "一千万元", "七百万元"], 3, { guide: "问的是“一共”，所以是七百万元。三百万元只是其中公众捐的那一部分。" }],
+        ["通告说：花园里有许多儿童游乐区，包括树屋、吊桥、水上乐园和迷宫。关于本文，以下哪一个不是“儿童花园”的游乐区？", ["植物园", "水上乐园", "树屋", "吊桥"], 0, { guide: "“包括”后面列的才是游乐区。植物园是儿童花园所在的地方，不是里面的游乐区。" }]
+      ],
+      match: [
+        ["____东西", ["推开", "乱放", "复习", "发芽"], 1, { translation: "leave things lying around", guide: "东西不收好、到处摆，就是乱放东西。" }],
+        ["打扫____", ["玩伴", "伙伴", "课室", "房门"], 2, { translation: "sweep the classroom", guide: "值日生要打扫课室。" }],
+        ["工作____", ["玩伴", "伙伴", "课室", "功课"], 1, { translation: "work partner", guide: "一起工作的人是伙伴；一起玩的才叫玩伴。" }],
+        ["____功课", ["乱放", "推开", "复习", "放开"], 2, { translation: "revise one's lessons", guide: "学过的再看一遍，叫复习功课。" }],
+        ["____房门", ["推开", "乱放", "放开", "发芽"], 0, { translation: "push the door open", guide: "门是推开的。" }],
+        ["种子____", ["放开", "推开", "乱放", "发芽"], 3, { translation: "the seed sprouts", guide: "种子长出小芽，叫发芽。" }],
+        ["____梦想", ["突然", "受伤", "实现", "觉得"], 2, { translation: "realise a dream", guide: "梦想要靠努力去实现。" }],
+        ["一块____", ["木板", "受伤", "准时", "觉得"], 0, { translation: "a plank of wood", guide: "木板是平平的一片，量词用“块”。" }],
+        ["____上学", ["突然", "觉得", "受伤", "准时"], 3, { translation: "go to school on time", guide: "不迟到就是准时上学。" }],
+        ["尾巴____", ["突然", "受伤", "准时", "木板"], 1, { translation: "the tail is hurt", guide: "尾巴被夹到或撞到会受伤。" }],
+        ["____请求", ["发出", "答应", "认真", "搬动"], 1, { translation: "agree to a request", guide: "别人请求你，你说好，就是答应请求。" }],
+        ["搬动____", ["画展", "重量", "椅子", "响声"], 2, { translation: "move a chair", guide: "椅子很重，要用力搬动。" }],
+        ["____响声", ["答应", "认真", "发出", "搬动"], 2, { translation: "make a sound", guide: "东西掉下来会发出响声。" }],
+        ["参观____", ["椅子", "重量", "画展", "响声"], 2, { translation: "visit an art exhibition", guide: "画展是给人看的，所以用参观。" }],
+        ["____学习", ["答应", "发出", "搬动", "认真"], 3, { translation: "study conscientiously", guide: "认真学习就是很专心、不马虎。" }],
+        ["称出____", ["椅子", "画展", "响声", "重量"], 3, { translation: "weigh out", guide: "用秤可以称出东西有多重。" }]
+      ],
+      order: [
+        {
+          prompt: "组句成段：公园里的小女孩",
+          type: "sequence",
+          guide: "先听到哭声 → 转头看见她 → 放下车去问 → 知道原因 → 带她去找妈妈。",
+          fixed: "放学后，小飞在公园里骑脚踏车。",
+          choices: [2, 3, 4, 5, 6],
+          lines: [
+            { text: "小飞叫小女孩不要哭了，他现在就带她去找妈妈。", answer: 6 },
+            { text: "小飞转了转头，看见她一个人坐在树下哭。", answer: 3 },
+            { text: "原来她找不到妈妈，感到非常害怕。", answer: 5 },
+            { text: "突然，他听到大树后面有小女孩的哭声。", answer: 2 },
+            { text: "小飞连忙放下脚踏车，走上前问她发生了什么事。", answer: 4 }
+          ],
+          answer: [6, 3, 5, 2, 4],
+          finalText: "1. 放学后，小飞在公园里骑脚踏车。 2. 突然，他听到大树后面有小女孩的哭声。 3. 小飞转了转头，看见她一个人坐在树下哭。 4. 小飞连忙放下脚踏车，走上前问她发生了什么事。 5. 原来她找不到妈妈，感到非常害怕。 6. 小飞叫小女孩不要哭了，他现在就带她去找妈妈。"
+        },
+        {
+          prompt: "组句成段：放小鸟回家（五句都要自己排）",
+          type: "sequence",
+          guide: "先发现小鸟 → 带回家关起来 → 小鸟不吃不喝 → 打开笼子放它走 → 小鸟飞走了。",
+          fixed: "",
+          choices: [1, 2, 3, 4, 5],
+          lines: [
+            { text: "小鸟在笼子里，低着头，不吃也不喝。", answer: 3 },
+            { text: "小鸟好像听懂了她的话，跳出鸟笼，快活地向天空飞去。", answer: 5 },
+            { text: "小乐很喜欢小鸟，就把它带回家，关在笼子里。", answer: 2 },
+            { text: "看见小鸟不开心的样子，小乐打开笼子，对小鸟说：“飞回你的家吧！”", answer: 4 },
+            { text: "早上，小乐在公园里发现了一只小鸟。", answer: 1 }
+          ],
+          answer: [3, 5, 2, 4, 1],
+          finalText: "1. 早上，小乐在公园里发现了一只小鸟。 2. 小乐很喜欢小鸟，就把它带回家，关在笼子里。 3. 小鸟在笼子里，低着头，不吃也不喝。 4. 看见小鸟不开心的样子，小乐打开笼子，对小鸟说：“飞回你的家吧！” 5. 小鸟好像听懂了她的话，跳出鸟笼，快活地向天空飞去。"
+        }
+      ],
+      clozeWords: [],
+      clozeAnswers: [],
+      clozeParts: ["这一课没有短文填空。"]
     }];
 
     const carModels = ["Cyber SUV", "蓝焰跑车", "星际赛车", "闪电越野车", "银翼概念车", "霓虹方程式", "磁悬浮小车"];
@@ -3510,7 +3593,35 @@
       "习惯": ["xí guàn", "做久了自然就会做的事。", "habit"],
       "紧张": ["jǐn zhāng", "心里怕怕的，放松不下来。", "nervous"],
       "庆祝": ["qìng zhù", "为高兴的事热闹一下。", "celebrate"],
-      "儿童节": ["ér tóng jié", "小朋友的节日。", "Children's Day"]
+      "儿童节": ["ér tóng jié", "小朋友的节日。", "Children's Day"],
+      "强弱": ["qiáng ruò", "强的和弱的；谁厉害谁不行。", "strong and weak"],
+      "玩耍": ["wán shuǎ", "玩，游戏。", "play"],
+      "感到": ["gǎn dào", "心里觉得。例：感到害怕。", "feel"],
+      "农夫劳动": ["nóng fū láo dòng", "种田的人在出力干活。", "the farmer works the land"],
+      "念": ["niàn", "出声地读。", "read aloud"],
+      "传": ["chuán", "一个一个往下递或往下传。", "pass on"],
+      "笼子": ["lóng zi", "关小动物的小屋子。", "cage"],
+      "鸟笼": ["niǎo lóng", "关鸟的笼子。", "birdcage"],
+      "快活": ["kuài huo", "很开心。", "cheerful; happy"],
+      "发芽": ["fā yá", "种子长出小芽来。", "sprout"],
+      "种子": ["zhǒng zi", "可以种出植物的小粒。", "seed"],
+      "木板": ["mù bǎn", "平平的一块木头。", "wooden plank"],
+      "响声": ["xiǎng shēng", "发出来的声音。", "a sound; noise"],
+      "乱放": ["luàn fàng", "到处乱摆，不收好。", "leave things lying around"],
+      "推开": ["tuī kāi", "用力把门或东西推出去。", "push open"],
+      "答应": ["dā ying", "说好，肯做。", "agree; promise"],
+      "实现": ["shí xiàn", "想做的事真的做到了。", "realise; come true"],
+      "认真": ["rèn zhēn", "很专心、很仔细。", "conscientious"],
+      "参观": ["cān guān", "去看一看，了解一下。", "visit (a place)"],
+      "椅子": ["yǐ zi", "坐的家具。", "chair"],
+      "吊桥": ["diào qiáo", "吊在半空中的桥，走起来会晃。", "suspension bridge"],
+      "树屋": ["shù wū", "建在树上的小屋。", "treehouse"],
+      "迷宫": ["mí gōng", "走进去容易迷路的弯弯曲曲的路。", "maze"],
+      "捐款": ["juān kuǎn", "大家自愿出的钱。", "donation"],
+      "公众": ["gōng zhòng", "大家，很多人。", "the public"],
+      "免费": ["miǎn fèi", "不用给钱。", "free of charge"],
+      "植物园": ["zhí wù yuán", "种了很多植物给人参观的大公园。", "botanic gardens"],
+      "游乐区": ["yóu lè qū", "可以玩的区域。", "play area"]
     };
 
     const audioCtx = () => new (window.AudioContext || window.webkitAudioContext)();
