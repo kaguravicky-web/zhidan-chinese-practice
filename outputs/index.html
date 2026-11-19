@@ -804,7 +804,7 @@
         </section>
       </section>
       <section class="result" id="resultBox"></section>
-      <div class="version">v2026-11-04-1</div>
+      <div class="version">v2026-11-19-1</div>
     </section>
   </main>
 
@@ -3101,6 +3101,36 @@
       clozeWords: [],
       clozeAnswers: [],
       clozeParts: ["这一课没有短文填空。"]
+    }, {
+      id: "hcl-week44-dictation",
+      title: "HCL Week 44 听写词语",
+      date: "Week 44",
+      summary: "HCL 听写 12 项。",
+      dictationGroups: [{
+        kind: "school",
+        title: "学校听写",
+        items: []
+      }, {
+        kind: "hcl",
+        title: "HCL 听写",
+        items: [
+          ["精彩", "jīng cǎi"], ["忍不住", "rěn bú zhù"], ["刚刚", "gāng gāng"], ["建议", "jiàn yì"],
+          ["秘密", "mì mì"], ["了解", "liǎo jiě"], ["预报", "yù bào"], ["情况", "qíng kuàng"],
+          ["播放", "bō fàng"], ["投篮", "tóu lán"], ["方言", "fāng yán"], ["疲倦", "pí juàn"]
+        ]
+      }],
+      words: [
+        ["精彩", "jīng cǎi"], ["忍不住", "rěn bú zhù"], ["刚刚", "gāng gāng"], ["建议", "jiàn yì"],
+        ["秘密", "mì mì"], ["了解", "liǎo jiě"], ["预报", "yù bào"], ["情况", "qíng kuàng"],
+        ["播放", "bō fàng"], ["投篮", "tóu lán"], ["方言", "fāng yán"], ["疲倦", "pí juàn"]
+      ],
+      sentences: [],
+      mcq: [],
+      match: [],
+      order: [],
+      clozeWords: [],
+      clozeAnswers: [],
+      clozeParts: ["这一课没有短文填空。"]
     }];
 
     const carModels = ["Cyber SUV", "蓝焰跑车", "星际赛车", "闪电越野车", "银翼概念车", "霓虹方程式", "磁悬浮小车"];
@@ -3700,7 +3730,17 @@
       "下沉": ["xià chén", "慢慢往下沉到水里。", "sink"],
       "漂亮": ["piào liang", "好看，美丽。", "pretty; beautiful"],
       "觉得": ["jué de", "心里认为，感到。", "feel; think"],
-      "周末": ["zhōu mò", "星期六和星期天。", "weekend"]
+      "周末": ["zhōu mò", "星期六和星期天。", "weekend"],
+      "精彩": ["jīng cǎi", "很好看、很好听，让人想叫好。", "wonderful; brilliant"],
+      "刚刚": ["gāng gāng", "就在不久以前。", "just now"],
+      "建议": ["jiàn yì", "把自己觉得好的办法说给别人听。", "suggest; suggestion"],
+      "秘密": ["mì mì", "不让别人知道的事。", "secret"],
+      "了解": ["liǎo jiě", "知道得很清楚。", "understand; get to know"],
+      "预报": ["yù bào", "事情发生前先告诉大家，比如天气预报。", "forecast"],
+      "情况": ["qíng kuàng", "事情现在是什么样子。", "situation"],
+      "投篮": ["tóu lán", "打篮球时把球投进篮筐。", "shoot a basket"],
+      "方言": ["fāng yán", "某个地方的人说的话，比如广东话、福建话。", "dialect"],
+      "疲倦": ["pí juàn", "很累，没有力气。", "tired; weary"]
     };
 
     const audioCtx = () => new (window.AudioContext || window.webkitAudioContext)();
